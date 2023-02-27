@@ -1,0 +1,8 @@
+# Foundry build files
+out/
+cache/
+lcov.info
+test/reference/RPC.sol
+
+# environment
+.env

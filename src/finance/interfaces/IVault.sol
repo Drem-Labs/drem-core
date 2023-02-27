@@ -8,7 +8,7 @@ interface IVault is IERC20 {
 
     // steps and assets
     function steps() external view returns(DataTypes.StepInfo[] memory);
-    function addSteps(DataTypes.StepInfo[] steps) external;
+    function addSteps(DataTypes.StepInfo[] calldata steps) external;
     function addTrackedAsset(address asset) external;
     function removeTrackedAsset(address asset) external;
 
@@ -17,5 +17,5 @@ interface IVault is IERC20 {
     function burnShares(uint256 shareAmount) external;
 
     // safegaurding funds
-    function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] expectations) external;
+    function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] calldata expectations) external;
 }

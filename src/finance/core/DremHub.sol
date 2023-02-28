@@ -28,8 +28,8 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      */
     uint256[49] private __gap;
 
-    modifier onlyFundDeployer() {
-        _onlyFundDeployer();
+    modifier onlyVaultDeployer() {
+        _onlyVaultDeployer();
         _;
     }
 
@@ -52,7 +52,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // Need to verify with Drem team about global state
     function setGlobalState() external onlyOwner {}
 
-    function setFundDeployer(address _fundDeployer) external onlyOwner{
+    function setVaultDeployer(address _vaultDeployer) external onlyOwner{
 
     }
 
@@ -69,7 +69,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // Need to verify with Drem team if vault's are upgradeable
     // If not, there is no need for this function
     // Function would be used to add to the comptroller => vault mapping
-    function deployVault() external onlyFundDeployer{}
+    function deployVault() external onlyVaultDeployer{}
 
     /***************************
      *    View functions                         
@@ -93,7 +93,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     /**
      @dev Used for modifier to cut down on bytecode
      */
-    function _onlyFundDeployer() internal {}
+    function _onlyVaultDeployer() internal {}
 
     function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting) internal {
         if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert InvalidStep();

@@ -175,5 +175,24 @@ contract Admin is DremHubHelper {
         vm.expectRevert(IDremHub.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
     }
+}
+
+contract ExternalFunctions is DremHubHelper {
+    function setUp() override public {
+        DremHubHelper.setUp();
+        dremHub.init();
+    }
+
+    function test_DremHubTransferHook_RevertIf_TradingNotAllowed() public {
+        dremHub.setGlobalTrading(false);
+
+        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        dremHub.dremHubBeforeTransferHook();
+    }
+
+    function test_DremHubTransferHook_RevertIf_TradingAllowed() public {
+        dremHub.setGlobalTrading(true);
+        dremHub.dremHubBeforeTransferHook();
+    }
 
 }

@@ -53,7 +53,8 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     function setGlobalState() external onlyOwner {}
 
     function setVaultDeployer(address _vaultDeployer) external onlyOwner{
-
+        if(_vaultDeployer.code.length == 0) revert InvalidVaultDeployerAddress();
+        vaultDeployer = _vaultDeployer;
     }
 
     function addWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {

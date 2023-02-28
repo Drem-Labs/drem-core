@@ -175,6 +175,18 @@ contract Admin is DremHubHelper {
         vm.expectRevert(IDremHub.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
     }
+
+    function test_SetVaultDeployer_RevertIf_AdressIsEOA() public {
+        address _eoaAddress = address(0x1);
+
+        vm.expectRevert(IDremHub.InvalidVaultDeployerAddress.selector);
+        dremHub.setVaultDeployer(_eoaAddress);
+    }
+
+    function test_SetVaultDeployer() public {
+        dremHub.setVaultDeployer(address(this));
+    }
+
 }
 
 contract ExternalFunctions is DremHubHelper {

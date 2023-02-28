@@ -5,11 +5,6 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 interface IDremHub {
 
     /**
-     *  'isTradingnAllowed' is set to false
-     */
-    error TradingDisabled();
-
-    /**
      *  Invalid step parameters passed in 
      */
     error InvalidParam();
@@ -18,6 +13,9 @@ interface IDremHub {
     *  Step was not passed in with encoded args
     */
     error InvalidStep();
+
+    error InvalidVaultDeployerAddress();
+
 
     /**
      *  Step is already whitelisted
@@ -29,15 +27,12 @@ interface IDremHub {
      */
     error StepNotWhitelisted();
 
-    event WhitelistedStepAdded(address interactionAddress, bytes4 functionSelector, bytes encodedArgs);
+    /**
+     *  'isTradingnAllowed' is set to false
+     */
+    error TradingDisabled();
 
-    event WhitelistedStepRemoved(address interactionAddress, bytes4 functionSelector, bytes encodedArgs);
-
-    event FundDeployerSet();
-
-    event GlobalStateUpdated();
-
-    event GlobalTradingSet(bool setting);
+    
 
     function addWhitelistedStep(DataTypes.StepInfo calldata, bytes calldata) external;
 

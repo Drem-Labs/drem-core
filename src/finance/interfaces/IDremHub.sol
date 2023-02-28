@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+import {DataTypes} from "../libraries/DataTypes.sol";
 interface IDremHub {
 
     /**
@@ -9,10 +10,37 @@ interface IDremHub {
     error TradingDisabled();
 
     /**
-     *  Invalid parameter passed into function
+     *  Invalid step parameters passed in 
      */
     error InvalidParam();
 
-    function addWhitelistedStep() external;
+    /**
+    *  Step was not passed in with encoded args
+    */
+    error InvalidStep();
+
+    /**
+     *  Step is already whitelisted
+     */
+    error StepAlreadyWhitelisted();
+
+    /**
+     *  Non-whitelisted step cannot be removed
+     */
+    error StepNotWhitelisted();
+
+    event WhitelistedStepAdded(address interactionAddress, bytes4 functionSelector, bytes encodedArgs);
+
+    event WhitelistedStepRemoved(address interactionAddress, bytes4 functionSelector, bytes encodedArgs);
+
+    event FundDeployerSet();
+
+    event GlobalStateUpdated();
+
+    event GlobalTradingSet(bool setting);
+
+    function addWhitelistedStep(DataTypes.StepInfo calldata, bytes calldata) external;
+
+    function isStepWhitelisted(DataTypes.StepInfo calldata, bytes calldata) external view returns(bool);
 
 }

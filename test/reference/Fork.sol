@@ -5,13 +5,12 @@ import "forge-std/Test.sol";
 import {Helper} from "./Helper.sol";
 
 contract Fork is Helper, Test {
-     /**
-      * Polygon
-      */
+    /**
+     * Polygon
+     */
     uint256 polygonForkId;
     string POLYGON_RPC_URL = vm.envString("POLYGON_RPC_URL");
     uint256 constant POLYGON_FORK_BLOCK = 39784975;
-
 
     function setUp() public virtual {
         vm.createSelectFork(POLYGON_RPC_URL);

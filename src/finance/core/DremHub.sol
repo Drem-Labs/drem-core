@@ -5,6 +5,8 @@ import {Ownable2StepUpgradeable} from "@openzeppelin-upgradeable/contracts/acces
 import {Initializable} from "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol"; 
 import {IDremHub} from "../interfaces/IDremHub.sol";
+import {DataTypes} from "../libraries/DataTypes.sol";
+import {Events} from "../libraries/Events.sol";
 
 // Initializable is inherited from Ownable2StepUpgradeable
 contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
@@ -42,26 +44,49 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     function setGlobalTrading(bool _isTradingAllowed) external onlyOwner {
-        if (isTradingAllowed == _isTradingAllowed) revert InvalidParam();
         isTradingAllowed = _isTradingAllowed;
+
+        emit Events.GlobalTradingSet(_isTradingAllowed);
     }
 
     // Need to verify with Drem team about global state
     function setGlobalState() external onlyOwner {}
 
-    function setFundDeployer() external onlyOwner{}
+    function setFundDeployer(address _fundDeployer) external onlyOwner{
 
-    function addWhitelistedStep() external onlyOwner {}
+    }
 
+    function addWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
+        _setWhitelistedStep(_step, _encodedArgs, true);
+        emit Events.WhitelistedStepAdded(_step.interactionAddress, _step.functionSelector, _encodedArgs);
+    }
+
+    function removeWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
+        _setWhitelistedStep(_step, _encodedArgs, false);
+        emit Events.WhitelistedStepRemoved(_step.interactionAddress, _step.functionSelector, _encodedArgs); 
+    }
+
+    // Need to verify with Drem team if vault's are upgradeable
+    // If not, there is no need for this function
+    // Function would be used to add to the comptroller => vault mapping
     function deployVault() external onlyFundDeployer{}
 
     function dremHubBeforeTransferHook() external view {
         if(!(isTradingAllowed)) revert TradingDisabled();
     }
 
-    function isStepWhitelisted() external view returns(bool){}
+    function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view returns(bool){}
 
     function _onlyFundDeployer() internal {}
+
+    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting) internal {
+        if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert InvalidStep();
+        
+        bytes32 _stepHash = keccak256(abi.encode(_step.interactionAddress, _step.functionSelector));
+        bytes32 _encodedArgsHash = keccak256(abi.encode(_encodedArgs));
+
+        whitelistedStep[_stepHash][_encodedArgsHash] = _setting;
+    }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

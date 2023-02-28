@@ -15,7 +15,9 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) whitelistedStep;
 
-    bool public isTradingAllowed;
+    bool private isTradingAllowed;
+
+    address private vaultDeployer;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
@@ -23,6 +25,11 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
      */
     uint256[49] private __gap;
+
+    modifier onlyFundDeployer() {
+        _onlyFundDeployer();
+        _;
+    }
 
     constructor() {
         _disableInitializers();
@@ -42,11 +49,19 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // Need to verify with Drem team about global state
     function setGlobalState() external onlyOwner {}
 
-    function addWhitelistedStep() external {}
+    function setFundDeployer() external onlyOwner{}
+
+    function addWhitelistedStep() external onlyOwner {}
+
+    function deployVault() external onlyFundDeployer{}
 
     function dremHubBeforeTransferHook() external view {
         if(!(isTradingAllowed)) revert TradingDisabled();
     }
+
+    function isStepWhitelisted() external view returns(bool){}
+
+    function _onlyFundDeployer() internal {}
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
 }

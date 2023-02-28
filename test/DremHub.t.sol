@@ -113,15 +113,67 @@ contract Admin is DremHubHelper {
     }
 
     function test_RemoveWhitelistedStep() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: ERC20.transfer.selector
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+
+        // Test if the ANY_CALL encoded arg is true
+        assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs));
+
+        vm.expectEmit(true,true,true,true);
+        emit Events.WhitelistedStepRemoved(_step.interactionAddress, _step.functionSelector, _encodedArgs);
+
+        dremHub.removeWhitelistedStep(_step, _encodedArgs);
+
+        assertFalse(dremHub.isStepWhitelisted(_step, _encodedArgs));
     }
 
-    function test_AddWhitelistedStep_RevertIf_InvalidInteractionAddress() public {}
+    function test_AddWhitelistedStep_RevertIf_InvalidInteractionAddress() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: address(0),
+            functionSelector: ERC20.transfer.selector
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
-    function test_AddWhitelistedStep_RevertIf_InvalidFunctionSelector() public {}
+        vm.expectRevert(IDremHub.InvalidStep.selector);
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+    }
 
-    function test_RemoveWhitelistedStep_RevertIf_InvalidInteractionAddress() public {}
+    function test_AddWhitelistedStep_RevertIf_InvalidFunctionSelector() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: bytes4(0)
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
-    function test_RemoveWhitelistedStep_RevertIf_InvalidFunctionSelector() public {}
+        vm.expectRevert(IDremHub.InvalidStep.selector);
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+    }
+
+    function test_RemoveWhitelistedStep_RevertIf_InvalidInteractionAddress() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: address(0),
+            functionSelector: ERC20.transfer.selector
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
+
+        vm.expectRevert(IDremHub.InvalidStep.selector);
+        dremHub.removeWhitelistedStep(_step, _encodedArgs);
+    }
+
+    function test_RemoveWhitelistedStep_RevertIf_InvalidFunctionSelector() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: bytes4(0)
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
+
+        vm.expectRevert(IDremHub.InvalidStep.selector);
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+    }
 
 }

@@ -1,7 +1,16 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-contract Helper {
+abstract contract Helper {
+
+    /**
+     * Drem Hub 
+     */
+    bytes32 private constant ANY_CALL = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
+
+    /**
+     * Token addresses
+     */
     address constant AAVE_ADDRESS = 0xD6DF932A45C0f255f85145f286eA0b292B21C90B;
     address constant DAI_ADDRESS = 0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063;
     address constant USDC_ADDRESS = 0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174;

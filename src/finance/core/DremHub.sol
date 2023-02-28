@@ -13,9 +13,9 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
 
     // keccak256('DremHub.ANY_CALL')
     bytes32 private constant ANY_CALL = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
-
+                                        
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
-    mapping(bytes32 => mapping(bytes32 => bool)) whitelistedStep;
+    mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
 
     bool private isTradingAllowed;
 
@@ -71,21 +71,41 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // Function would be used to add to the comptroller => vault mapping
     function deployVault() external onlyFundDeployer{}
 
+    /***************************
+     *    View functions                         
+     **************************/
+
     function dremHubBeforeTransferHook() external view {
         if(!(isTradingAllowed)) revert TradingDisabled();
     }
 
-    function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view returns(bool){}
+    function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view returns(bool){
+        bytes32 _stepHash = _getStepHash(_step);
+        bytes32 _encodedArgsHash = keccak256(_encodedArgs);
 
+        return whitelistedSteps[_stepHash][ANY_CALL] ? true : whitelistedSteps[_stepHash][_encodedArgsHash];
+    }
+
+    /***************************
+     *    Internal functions                         
+     **************************/
+    
+    /**
+     @dev Used for modifier to cut down on bytecode
+     */
     function _onlyFundDeployer() internal {}
 
     function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting) internal {
         if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert InvalidStep();
         
-        bytes32 _stepHash = keccak256(abi.encode(_step.interactionAddress, _step.functionSelector));
-        bytes32 _encodedArgsHash = keccak256(abi.encode(_encodedArgs));
+        bytes32 _stepHash = _getStepHash(_step);
+        bytes32 _encodedArgsHash = keccak256(_encodedArgs);
 
-        whitelistedStep[_stepHash][_encodedArgsHash] = _setting;
+        whitelistedSteps[_stepHash][_encodedArgsHash] = _setting;
+    }
+
+    function _getStepHash(DataTypes.StepInfo calldata _step) internal pure returns(bytes32) {
+        return keccak256(abi.encode(_step.interactionAddress, _step.functionSelector)); 
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}

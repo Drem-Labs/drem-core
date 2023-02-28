@@ -2,12 +2,16 @@
 pragma solidity =0.8.17;
 
 import "forge-std/Test.sol";
+import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
+import {Events} from "../src/finance/libraries/Events.sol";
+import {Helper} from "./reference/Helper.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
-import {Events} from "../src/finance/libraries/Events.sol";
+import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract DremHubHelper is Test {
+
+contract DremHubHelper is Test, Helper {
     DremHub dremHub;
     address dremHubImplementation;
 
@@ -53,7 +57,7 @@ contract Admin is DremHubHelper {
         dremHub.setGlobalTrading(true);
     }
 
-    function test_setGlobalTrading_revert_nonOwner() public {
+    function test_SetGlobalTrading_RevertIf_NonOwner() public {
         address _randomAddress = address(0x67);
         vm.startPrank(_randomAddress);
 
@@ -62,4 +66,28 @@ contract Admin is DremHubHelper {
 
         vm.stopPrank();
     }
+
+    function test_AddWhitelistedStep() public {
+        
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: ERC20.transfer.selector
+        });
+
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
+
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+
+        assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs));
+
+    }
+
+    function test_RemoveWhitelistedStep() public {
+
+    }
+
+    function test_AddWhitelistedStep_RevertIf_InvalidInteractionAddress() public {}
+
+    function test_AddWhitelistedStep_RevertIf_InvalidFunctionSelector() public {}
+
 }

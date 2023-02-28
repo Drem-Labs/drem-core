@@ -6,7 +6,8 @@ abstract contract Helper {
     /**
      * Drem Hub 
      */
-    bytes32 private constant ANY_CALL = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
+    bytes ANY_CALL = bytes("DremHub.ANY_CALL");
+    bytes32 constant ANY_CALL_HASH = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
 
     /**
      * Token addresses

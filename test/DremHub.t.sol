@@ -67,8 +67,7 @@ contract Admin is DremHubHelper {
         vm.stopPrank();
     }
 
-    function test_AddWhitelistedStep() public {
-        
+    function test_AddWhitelistedStep_AnyCall() public {
         DataTypes.StepInfo memory _step = DataTypes.StepInfo({
             interactionAddress: USDC_ADDRESS,
             functionSelector: ERC20.transfer.selector
@@ -76,10 +75,41 @@ contract Admin is DremHubHelper {
 
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
+        vm.expectEmit(true, true, true, true);
+        emit Events.WhitelistedStepAdded(_step.interactionAddress, _step.functionSelector, _encodedArgs);
+
         dremHub.addWhitelistedStep(_step, _encodedArgs);
 
+        // Test if the ANY_CALL encoded arg is true
         assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs));
 
+        // Test other encoded args
+        address to =  address(0x67);
+        uint256 amount = 10 ** 6;
+
+        bytes memory _otherEncodedArgs = abi.encode(to, amount);
+        assertTrue(dremHub.isStepWhitelisted(_step, _otherEncodedArgs));
+    }
+    
+    function test_AddWhitelistedStep_NonAnyCall() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: ERC20.transfer.selector
+        }); 
+
+        // Arguments
+        address to =  address(0x67);
+        uint256 amount = 10 ** 6;
+
+        bytes memory _encodedArgs = abi.encode(to, amount);
+
+        vm.expectEmit(true, true, true, true);
+        emit Events.WhitelistedStepAdded(_step.interactionAddress, _step.functionSelector, _encodedArgs);
+
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+
+        assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs)); 
+        assertFalse(dremHub.isStepWhitelisted(_step, ANY_CALL));
     }
 
     function test_RemoveWhitelistedStep() public {
@@ -89,5 +119,9 @@ contract Admin is DremHubHelper {
     function test_AddWhitelistedStep_RevertIf_InvalidInteractionAddress() public {}
 
     function test_AddWhitelistedStep_RevertIf_InvalidFunctionSelector() public {}
+
+    function test_RemoveWhitelistedStep_RevertIf_InvalidInteractionAddress() public {}
+
+    function test_RemoveWhitelistedStep_RevertIf_InvalidFunctionSelector() public {}
 
 }

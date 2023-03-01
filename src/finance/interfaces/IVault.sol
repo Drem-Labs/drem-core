@@ -6,8 +6,12 @@ import {IERC20Upgradeable} from "@openzeppelin-upgradeable/contracts/token/ERC20
 import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface IVault is IERC20Upgradeable {
+
+    error InvalidStepsLength();
+    error StepsAndArgsNotSameLength();
+
     // steps and assets
-    function steps() external view returns (DataTypes.StepInfo[] memory);
+    function getSteps() external view returns (DataTypes.StepInfo[] memory);
 
     // share accounting
     function mintShares(uint256 shareAmount) external;

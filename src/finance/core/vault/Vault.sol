@@ -6,28 +6,47 @@ import {DataTypes} from "../../libraries/DataTypes.sol";
 import {StateAware} from "../../base/StateAware.sol";
 import {DremERC20} from "../../base/DremERC20.sol";
 
+/**
+ *   INVARIANTS
+ *   1. steps[] and stepsEncodedArgs[] must always be the same length
+ */
+
 contract Vault is IVault, DremERC20  {
     // Need to make this ERC20 Upgradeable...
     // DREM_HUB is an immutable variable.  It is stored in runtime code
     // Therefore, accessible by proxies
-    constructor(address _dremHub) DremERC20(_dremHub){
 
-    }
+    uint256 constant MAX_STEPS = 10;
 
+    DataTypes.StepInfo[] private steps;
+
+    constructor(address _dremHub) DremERC20(_dremHub){}
+
+    /**
+     * @param _name Name of the vault
+     * @param _symbol Symbol for the ERC20
+     */
     function init( 
+        address caller,
         string calldata _name,
         string calldata _symbol,
-        DataTypes.StepInfo[] calldata _steps) external initializer {
+        DataTypes.StepInfo[] calldata _steps,
+        bytes[] calldata _encodedArgsPerStep ) external initializer {
+        if (_steps.length != _encodedArgsPerStep.length) revert StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
-        _validateSteps(_steps);
+        _validateSteps(_steps, _encodedArgsPerStep);
         _addSteps(_steps);
     }
 
-    function steps() external view returns (DataTypes.StepInfo[] memory) {}
 
-    function mintShares(uint256 _shareAmount) external {}
+ 
+    function mintShares(uint256 _shareAmount) external {
+        // Execute steps...
+    }
 
-    function burnShares(uint256 _shareAmount) external {}
+    function burnShares(uint256 _shareAmount) external {
+        // Need certain withdrawl steps...
+    }
 
     // Deposits and withdrawls may need to be moved to the controller depending on whether or not migrations are possible
 
@@ -39,9 +58,28 @@ contract Vault is IVault, DremERC20  {
 
     function withdrawFor() external{}
 
-    function _validateSteps(DataTypes.StepInfo[] calldata) internal {}
+    function getSteps() external view returns (DataTypes.StepInfo[] memory) {
+        return steps;
+    }
 
-    function _addSteps(DataTypes.StepInfo[] calldata) internal {}
+    function _validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) internal {
+        for (uint256 i; i < _steps.length; ){
+            _validateStep(_steps[i], _encodedArgsPerStep[i]);
+            unchecked{++i;}
+        }
 
+    }
 
+    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArg) internal {
+
+    }
+
+    function _addSteps(DataTypes.StepInfo[] calldata _steps) internal {
+        for (uint256 i; i < _steps.length; ) {
+            steps.push(_steps[i]);
+            unchecked{++i;}
+        }
+    }
+
+    function _executeSteps() internal {}
 }

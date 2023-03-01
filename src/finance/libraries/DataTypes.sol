@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+// To Do: Order alphabetically 
 library DataTypes {
     // basic step routing information
     struct StepInfo {
@@ -13,5 +14,16 @@ library DataTypes {
     struct AssetExpectation {
         address assetAddress;
         uint256 amount;
+    }
+
+    /**
+     *  Unpaused: All protocol actions enabled
+     *  Paused: Creation of new trade paused.  Copying and exiting trades still possible.
+     *  Frozen: Copying and creating new trades paused.  Exiting trades still possible
+     */
+    enum GlobalState {
+        Unpaused,
+        Paused,
+        Frozen
     }
 }

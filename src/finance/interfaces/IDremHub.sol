@@ -14,8 +14,10 @@ interface IDremHub {
     */
     error InvalidStep();
 
+    /**
+     * Passed in Vault Deployer address is not a contract
+     */
     error InvalidVaultDeployerAddress();
-
 
     /**
      *  Step is already whitelisted

@@ -132,12 +132,46 @@ contract Admin is DremHubHelper {
         assertFalse(dremHub.isStepWhitelisted(_step, _encodedArgs));
     }
 
+    // "Ownable: caller is not the owner"
+
+    function test_AddWhitelistedStep_RevertIf_NonOwner() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: ERC20.transfer.selector
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
+        
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
+
+        vm.stopPrank();
+    }
+
+    function test_RemoveWhitelistedStep_RevertIf_NonOwner() public {
+        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
+            interactionAddress: USDC_ADDRESS,
+            functionSelector: ERC20.transfer.selector
+        });
+        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
+
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        dremHub.removeWhitelistedStep(_step, _encodedArgs);
+
+        vm.stopPrank();
+    }
+
+
     function test_AddWhitelistedStep_RevertIf_InvalidInteractionAddress() public {
         DataTypes.StepInfo memory _step = DataTypes.StepInfo({
             interactionAddress: address(0),
             functionSelector: ERC20.transfer.selector
         });
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
+        
 
         vm.expectRevert(IDremHub.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
@@ -183,8 +217,31 @@ contract Admin is DremHubHelper {
         dremHub.setVaultDeployer(_eoaAddress);
     }
 
+    function test_SetVaultDeployer_NonOwner() public {
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        dremHub.setVaultDeployer(address(this)); 
+    }
+
     function test_SetVaultDeployer() public {
         dremHub.setVaultDeployer(address(this));
+    }
+
+    function test_UpgradeTo_Owner() public {
+        address _newDremHubImplementation = address(new DremHub());
+        dremHub.upgradeTo(_newDremHubImplementation);
+    }
+
+    function test_Upgrade_RevertIf_NonOwner() public {
+        address _newDremHubImplementation = address(new DremHub());
+
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert("Ownable: caller is not the owner");
+        dremHub.upgradeTo(_newDremHubImplementation);
+
+        vm.stopPrank();
     }
 
 }

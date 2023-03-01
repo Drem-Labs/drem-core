@@ -18,8 +18,9 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
 
     bool private isTradingAllowed;
-
     address private vaultDeployer;
+
+    DataTypes.GlobalState globalState;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
@@ -50,7 +51,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     // Need to verify with Drem team about global state
-    function setGlobalState() external onlyOwner {}
+    function setGlobalState(DataTypes.GlobalState memory _state) external onlyOwner {}
 
     function setVaultDeployer(address _vaultDeployer) external onlyOwner{
         if(_vaultDeployer.code.length == 0) revert InvalidVaultDeployerAddress();

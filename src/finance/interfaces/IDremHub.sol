@@ -2,16 +2,16 @@
 pragma solidity =0.8.17;
 
 import {DataTypes} from "../libraries/DataTypes.sol";
-interface IDremHub {
 
+interface IDremHub {
     /**
-     *  Invalid step parameters passed in 
+     *  Invalid step parameters passed in
      */
     error InvalidParam();
 
     /**
-    *  Step was not passed in with encoded args
-    */
+     *  Step was not passed in with encoded args
+     */
     error InvalidStep();
 
     /**
@@ -34,10 +34,7 @@ interface IDremHub {
      */
     error TradingDisabled();
 
-    
-
     function addWhitelistedStep(DataTypes.StepInfo calldata, bytes calldata) external;
 
-    function isStepWhitelisted(DataTypes.StepInfo calldata, bytes calldata) external view returns(bool);
-
+    function isStepWhitelisted(DataTypes.StepInfo calldata, bytes calldata) external view returns (bool);
 }

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-// To Do: Order alphabetically 
+// To Do: Order alphabetically
 library DataTypes {
     // basic step routing information
     struct StepInfo {

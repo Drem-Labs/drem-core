@@ -10,7 +10,6 @@ import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-
 contract DremHubHelper is Test, Helper {
     DremHub dremHub;
     address dremHubImplementation;
@@ -50,7 +49,6 @@ contract Admin is DremHubHelper {
     }
 
     function test_setGlobalTrading() public {
-
         vm.expectEmit(true, true, true, true);
         emit Events.GlobalTradingSet(true);
 
@@ -68,10 +66,8 @@ contract Admin is DremHubHelper {
     }
 
     function test_AddWhitelistedStep_AnyCall() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: ERC20.transfer.selector});
 
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
@@ -84,21 +80,19 @@ contract Admin is DremHubHelper {
         assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs));
 
         // Test other encoded args
-        address to =  address(0x67);
+        address to = address(0x67);
         uint256 amount = 10 ** 6;
 
         bytes memory _otherEncodedArgs = abi.encode(to, amount);
         assertTrue(dremHub.isStepWhitelisted(_step, _otherEncodedArgs));
     }
-    
+
     function test_AddWhitelistedStep_NonAnyCall() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: ERC20.transfer.selector
-        }); 
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: ERC20.transfer.selector});
 
         // Arguments
-        address to =  address(0x67);
+        address to = address(0x67);
         uint256 amount = 10 ** 6;
 
         bytes memory _encodedArgs = abi.encode(to, amount);
@@ -108,15 +102,13 @@ contract Admin is DremHubHelper {
 
         dremHub.addWhitelistedStep(_step, _encodedArgs);
 
-        assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs)); 
+        assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs));
         assertFalse(dremHub.isStepWhitelisted(_step, ANY_CALL));
     }
 
     function test_RemoveWhitelistedStep() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
         dremHub.addWhitelistedStep(_step, _encodedArgs);
@@ -124,7 +116,7 @@ contract Admin is DremHubHelper {
         // Test if the ANY_CALL encoded arg is true
         assertTrue(dremHub.isStepWhitelisted(_step, _encodedArgs));
 
-        vm.expectEmit(true,true,true,true);
+        vm.expectEmit(true, true, true, true);
         emit Events.WhitelistedStepRemoved(_step.interactionAddress, _step.functionSelector, _encodedArgs);
 
         dremHub.removeWhitelistedStep(_step, _encodedArgs);
@@ -135,12 +127,10 @@ contract Admin is DremHubHelper {
     // "Ownable: caller is not the owner"
 
     function test_AddWhitelistedStep_RevertIf_NonOwner() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
-        
+
         vm.startPrank(address(0x67));
 
         vm.expectRevert("Ownable: caller is not the owner");
@@ -150,10 +140,8 @@ contract Admin is DremHubHelper {
     }
 
     function test_RemoveWhitelistedStep_RevertIf_NonOwner() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
         vm.startPrank(address(0x67));
@@ -164,24 +152,18 @@ contract Admin is DremHubHelper {
         vm.stopPrank();
     }
 
-
     function test_AddWhitelistedStep_RevertIf_InvalidInteractionAddress() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: address(0),
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: address(0), functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
-        
 
         vm.expectRevert(IDremHub.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
     }
 
     function test_AddWhitelistedStep_RevertIf_InvalidFunctionSelector() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: bytes4(0)
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: bytes4(0)});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
         vm.expectRevert(IDremHub.InvalidStep.selector);
@@ -189,10 +171,8 @@ contract Admin is DremHubHelper {
     }
 
     function test_RemoveWhitelistedStep_RevertIf_InvalidInteractionAddress() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: address(0),
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: address(0), functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
         vm.expectRevert(IDremHub.InvalidStep.selector);
@@ -200,10 +180,8 @@ contract Admin is DremHubHelper {
     }
 
     function test_RemoveWhitelistedStep_RevertIf_InvalidFunctionSelector() public {
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: USDC_ADDRESS,
-            functionSelector: bytes4(0)
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: bytes4(0)});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
         vm.expectRevert(IDremHub.InvalidStep.selector);
@@ -221,7 +199,7 @@ contract Admin is DremHubHelper {
         vm.startPrank(address(0x67));
 
         vm.expectRevert("Ownable: caller is not the owner");
-        dremHub.setVaultDeployer(address(this)); 
+        dremHub.setVaultDeployer(address(this));
     }
 
     function test_SetVaultDeployer() public {
@@ -251,11 +229,10 @@ contract Admin is DremHubHelper {
         // AssertEq can't process enums
         assertEq(uint256(_state), uint256(dremHub.getProtocolState()));
     }
-
 }
 
 contract ExternalFunctions is DremHubHelper {
-    function setUp() override public {
+    function setUp() public override {
         DremHubHelper.setUp();
         dremHub.init();
     }
@@ -283,5 +260,4 @@ contract ExternalFunctions is DremHubHelper {
         dremHub.setGlobalTrading(true);
         dremHub.dremHubBeforeTransferHook();
     }
-
 }

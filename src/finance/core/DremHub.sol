@@ -3,17 +3,16 @@ pragma solidity =0.8.17;
 
 import {Ownable2StepUpgradeable} from "@openzeppelin-upgradeable/contracts/access/Ownable2StepUpgradeable.sol";
 import {Initializable} from "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
-import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol"; 
+import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {IDremHub} from "../interfaces/IDremHub.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Events} from "../libraries/Events.sol";
 
 // Initializable is inherited from Ownable2StepUpgradeable
 contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
-
     // keccak256('DremHub.ANY_CALL')
     bytes32 private constant ANY_CALL_HASH = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
-                                        
+
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
 
@@ -55,8 +54,8 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
         protocolState = _state;
     }
 
-    function setVaultDeployer(address _vaultDeployer) external onlyOwner{
-        if(_vaultDeployer.code.length == 0) revert InvalidVaultDeployerAddress();
+    function setVaultDeployer(address _vaultDeployer) external onlyOwner {
+        if (_vaultDeployer.code.length == 0) revert InvalidVaultDeployerAddress();
         vaultDeployer = _vaultDeployer;
     }
 
@@ -67,23 +66,29 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
 
     function removeWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
         _setWhitelistedStep(_step, _encodedArgs, false);
-        emit Events.WhitelistedStepRemoved(_step.interactionAddress, _step.functionSelector, _encodedArgs); 
+        emit Events.WhitelistedStepRemoved(_step.interactionAddress, _step.functionSelector, _encodedArgs);
     }
 
     // Need to verify with Drem team if vault's are upgradeable
     // If not, there is no need for this function
     // Function would be used to add to the comptroller => vault mapping
-    function deployVault() external onlyVaultDeployer{}
+    function deployVault() external onlyVaultDeployer {}
 
-    /***************************
-     *    View functions                         
-     **************************/
+    /**
+     *
+     *    View functions
+     *
+     */
 
     function dremHubBeforeTransferHook() external view {
-        if((!(isTradingAllowed)) || protocolState > DataTypes.ProtocolState.Unpaused) revert TradingDisabled();
+        if ((!(isTradingAllowed)) || protocolState > DataTypes.ProtocolState.Unpaused) revert TradingDisabled();
     }
 
-    function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view returns(bool){
+    function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs)
+        external
+        view
+        returns (bool)
+    {
         bytes32 _stepHash = _getStepHash(_step);
         bytes32 _encodedArgsHash = keccak256(_encodedArgs);
 
@@ -94,26 +99,30 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
         return protocolState;
     }
 
-    /***************************
-     *    Internal functions                         
-     **************************/
-    
     /**
-     @dev Used for modifier to cut down on bytecode
+     *
+     *    Internal functions
+     *
+     */
+
+    /**
+     * @dev Used for modifier to cut down on bytecode
      */
     function _onlyVaultDeployer() internal {}
 
-    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting) internal {
+    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting)
+        internal
+    {
         if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert InvalidStep();
-        
+
         bytes32 _stepHash = _getStepHash(_step);
         bytes32 _encodedArgsHash = keccak256(_encodedArgs);
 
         whitelistedSteps[_stepHash][_encodedArgsHash] = _setting;
     }
 
-    function _getStepHash(DataTypes.StepInfo calldata _step) internal pure returns(bytes32) {
-        return keccak256(abi.encode(_step.interactionAddress, _step.functionSelector)); 
+    function _getStepHash(DataTypes.StepInfo calldata _step) internal pure returns (bytes32) {
+        return keccak256(abi.encode(_step.interactionAddress, _step.functionSelector));
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}

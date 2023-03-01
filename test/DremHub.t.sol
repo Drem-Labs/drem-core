@@ -244,6 +244,14 @@ contract Admin is DremHubHelper {
         vm.stopPrank();
     }
 
+    function test_SetGlobalState() public {
+        DataTypes.ProtocolState _state = DataTypes.ProtocolState.Frozen;
+        dremHub.setProtocolState(_state);
+
+        // AssertEq can't process enums
+        assertEq(uint256(_state), uint256(dremHub.getProtocolState()));
+    }
+
 }
 
 contract ExternalFunctions is DremHubHelper {
@@ -259,7 +267,19 @@ contract ExternalFunctions is DremHubHelper {
         dremHub.dremHubBeforeTransferHook();
     }
 
-    function test_DremHubTransferHook_RevertIf_TradingAllowed() public {
+    function test_DremHubTransferHook_RevertIf_ProtocolPaused() public {
+        dremHub.setProtocolState(DataTypes.ProtocolState.Paused);
+        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        dremHub.dremHubBeforeTransferHook();
+    }
+
+    function test_DremHubTransferHook_RevertIf_ProtocolFrozen() public {
+        dremHub.setProtocolState(DataTypes.ProtocolState.Frozen);
+        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        dremHub.dremHubBeforeTransferHook();
+    }
+
+    function test_DremHubTransferHook_TradingAllowed() public {
         dremHub.setGlobalTrading(true);
         dremHub.dremHubBeforeTransferHook();
     }

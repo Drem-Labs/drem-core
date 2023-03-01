@@ -20,7 +20,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     bool private isTradingAllowed;
     address private vaultDeployer;
 
-    DataTypes.GlobalState globalState;
+    DataTypes.ProtocolState protocolState;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
@@ -51,7 +51,9 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     // Need to verify with Drem team about global state
-    function setGlobalState(DataTypes.GlobalState memory _state) external onlyOwner {}
+    function setProtocolState(DataTypes.ProtocolState _state) external onlyOwner {
+        protocolState = _state;
+    }
 
     function setVaultDeployer(address _vaultDeployer) external onlyOwner{
         if(_vaultDeployer.code.length == 0) revert InvalidVaultDeployerAddress();
@@ -78,7 +80,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      **************************/
 
     function dremHubBeforeTransferHook() external view {
-        if(!(isTradingAllowed)) revert TradingDisabled();
+        if((!(isTradingAllowed)) || protocolState > DataTypes.ProtocolState.Unpaused) revert TradingDisabled();
     }
 
     function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view returns(bool){
@@ -86,6 +88,10 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
         bytes32 _encodedArgsHash = keccak256(_encodedArgs);
 
         return whitelistedSteps[_stepHash][ANY_CALL_HASH] ? true : whitelistedSteps[_stepHash][_encodedArgsHash];
+    }
+
+    function getProtocolState() external view returns (DataTypes.ProtocolState) {
+        return protocolState;
     }
 
     /***************************

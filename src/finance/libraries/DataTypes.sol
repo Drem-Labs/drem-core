@@ -21,7 +21,7 @@ library DataTypes {
      *  Paused: Creation of new trade paused.  Copying and exiting trades still possible.
      *  Frozen: Copying and creating new trades paused.  Exiting trades still possible
      */
-    enum GlobalState {
+    enum ProtocolState {
         Unpaused,
         Paused,
         Frozen

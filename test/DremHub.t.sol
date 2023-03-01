@@ -16,8 +16,7 @@ contract DremHubHelper is Test, Helper {
 
     function setUp() public virtual {
         dremHubImplementation = address(new DremHub());
-        bytes memory _emptyBytes;
-        dremHub = DremHub(address(new ERC1967Proxy(dremHubImplementation, _emptyBytes)));
+        dremHub = DremHub(address(new ERC1967Proxy(dremHubImplementation, new bytes(0))));
     }
 }
 

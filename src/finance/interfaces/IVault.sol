@@ -2,9 +2,10 @@
 pragma solidity =0.8.17;
 
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Upgradeable} from "@openzeppelin-upgradeable/contracts/token/ERC20/IERC20Upgradeable.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 
-interface IVault is IERC20 {
+interface IVault is IERC20Upgradeable {
     // steps and assets
     function steps() external view returns (DataTypes.StepInfo[] memory);
 

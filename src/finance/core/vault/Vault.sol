@@ -38,8 +38,6 @@ contract Vault is IVault, DremERC20  {
         _addSteps(_steps);
     }
 
-
- 
     function mintShares(uint256 _shareAmount) external {
         // Execute steps...
     }
@@ -67,7 +65,6 @@ contract Vault is IVault, DremERC20  {
             _validateStep(_steps[i], _encodedArgsPerStep[i]);
             unchecked{++i;}
         }
-
     }
 
     function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArg) internal {

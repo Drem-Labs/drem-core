@@ -10,9 +10,9 @@ error ProtocolFrozen();
 
 abstract contract StateAware {
 
-    IDremHub immutable dremHub;
+    IDremHub immutable DREM_HUB;
     constructor(address _hub ) {
-        dremHub = IDremHub(_hub);
+        DREM_HUB = IDremHub(_hub);
     }
 
     modifier pausable() {
@@ -26,10 +26,10 @@ abstract contract StateAware {
     }
 
     function _validateNotPausedOrFrozen() internal view {
-        if (dremHub.getProtocolState() > DataTypes.ProtocolState.Unpaused) revert ProtocolPausedOrFrozen();
+        if (DREM_HUB.getProtocolState() > DataTypes.ProtocolState.Unpaused) revert ProtocolPausedOrFrozen();
     }
 
     function _validateNotFrozen() internal view {
-        if (dremHub.getProtocolState() == DataTypes.ProtocolState.Frozen) revert ProtocolFrozen(); 
+        if (DREM_HUB.getProtocolState() == DataTypes.ProtocolState.Frozen) revert ProtocolFrozen(); 
     }
 }

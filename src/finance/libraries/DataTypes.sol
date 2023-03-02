@@ -33,6 +33,19 @@ library DataTypes {
     }
 
     /**
+     *  Enabled: Wind, unwind, create new strategies
+     *  Legacy: Wind and unwind existing strategies
+     *  Deprecated: Unwind existing strategies
+     *  Disabled: No functionality
+     */
+    enum StepState {
+        Enabled,
+        Legacy,
+        Deprecated,
+        Disabled
+    }
+
+    /**
      *  Price aggregator data types
      */
      

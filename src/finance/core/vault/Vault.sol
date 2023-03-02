@@ -26,6 +26,7 @@ contract Vault is IVault, DremERC20  {
      * @param _name Name of the vault
      * @param _symbol Symbol for the ERC20
      */
+     // init should not emit an event -- Fund deployer should
     function init( 
         address caller,
         string calldata _name,
@@ -38,8 +39,6 @@ contract Vault is IVault, DremERC20  {
         _addSteps(_steps);
     }
 
-
- 
     function mintShares(uint256 _shareAmount) external {
         // Execute steps...
     }
@@ -63,15 +62,17 @@ contract Vault is IVault, DremERC20  {
     }
 
     function _validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) internal {
+        
+        if(_steps.length > MAX_STEPS || _steps.length == 0) revert InvalidNumberOfSteps();
+
         for (uint256 i; i < _steps.length; ){
             _validateStep(_steps[i], _encodedArgsPerStep[i]);
             unchecked{++i;}
         }
-
     }
 
-    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArg) internal {
-
+    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArgs) internal {
+        if(!(DREM_HUB.isStepWhitelisted(_step, _encodedArgs))) revert StepNotWhitelisted();
     }
 
     function _addSteps(DataTypes.StepInfo[] calldata _steps) internal {

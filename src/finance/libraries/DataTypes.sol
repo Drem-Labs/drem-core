@@ -3,6 +3,11 @@ pragma solidity =0.8.17;
 
 // To Do: Order alphabetically
 library DataTypes {
+    
+    /**
+     * Global data types
+     */
+    
     // basic step routing information
     struct StepInfo {
         address interactionAddress;
@@ -26,4 +31,9 @@ library DataTypes {
         Paused,
         Frozen
     }
+
+    /**
+     *  Price aggregator data types
+     */
+     
 }

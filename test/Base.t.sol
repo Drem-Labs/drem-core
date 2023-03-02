@@ -34,16 +34,16 @@ contract DremERC20Test is Test {
         dremERC20 = new DremERC20Harness(address(dremHub));
 
         dremERC20.mint(address(this), 1 ether);
+
+        dremHub.setGlobalTrading(true);
     }
 
     function test_Transfer_GlobalStateUnpausedAndTradingAllowed() public {
-        dremHub.setGlobalTrading(true);
         dremERC20.transfer(alice, 1_000);
     }
 
     function test_Transfer_GlobalStatePaused() public {
         dremHub.setProtocolState(DataTypes.ProtocolState.Paused);
-        vm.expectRevert(IDremHub.TradingDisabled.selector);
         dremERC20.transfer(alice, 1_000); 
     }
 

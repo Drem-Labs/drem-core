@@ -50,6 +50,9 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     // Need to verify with Drem team about global state
+    // Unpaused: Anything is possible!
+    // Paused: No new trades can be opened; deposits and withdrawls possible; vault shares transfers turned on
+    // Frozen: Nothing is possible except withdrawls; 
     function setProtocolState(DataTypes.ProtocolState _state) external onlyOwner {
         protocolState = _state;
     }
@@ -81,7 +84,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      */
 
     function dremHubBeforeTransferHook() external view {
-        if ((!(isTradingAllowed)) || protocolState > DataTypes.ProtocolState.Unpaused) revert TradingDisabled();
+        if ((!(isTradingAllowed)) || protocolState == DataTypes.ProtocolState.Frozen) revert TradingDisabled();
     }
 
     function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs)

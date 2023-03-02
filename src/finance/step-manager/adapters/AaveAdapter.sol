@@ -5,9 +5,6 @@ import {IStep} from "../../interfaces/IStep.sol";
 
 /**
  * Step actions include: 
- * Action 1: Swap
- * Action 2: Provide Liquidity
- * Action 3: Exit Liquidity
+ * Action 1: Borrow
+ * Action 2: Lend
  */
-
-contract UniswapV3StepAdapter {}

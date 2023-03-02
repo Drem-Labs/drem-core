@@ -7,8 +7,10 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface IVault is IERC20Upgradeable {
 
+    error InvalidNumberOfSteps();
     error InvalidStepsLength();
     error StepsAndArgsNotSameLength();
+    error StepNotWhitelisted();
 
     // steps and assets
     function getSteps() external view returns (DataTypes.StepInfo[] memory);

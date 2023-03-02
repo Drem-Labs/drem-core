@@ -2,6 +2,9 @@
 pragma solidity =0.8.17;
 
 interface IStep {
+    // not able to make changes as the owner
+    error NotHubOwner();
+
     // initialize the step (unknown amount of bytes --> must be decoded)
     function init(uint256 argIndex, bytes calldata fixedArgs) external;
 

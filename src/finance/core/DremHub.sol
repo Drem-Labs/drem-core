@@ -45,11 +45,9 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
 
     function setGlobalTrading(bool _isTradingAllowed) external onlyOwner {
         isTradingAllowed = _isTradingAllowed;
-
         emit Events.GlobalTradingSet(_isTradingAllowed);
     }
 
-    // Need to verify with Drem team about global state
     // Unpaused: Anything is possible!
     // Paused: No new trades can be opened; deposits and withdrawls possible; vault shares transfers turned on
     // Frozen: Nothing is possible except withdrawls; 

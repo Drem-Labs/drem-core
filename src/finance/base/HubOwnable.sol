@@ -13,7 +13,7 @@ abstract contract HubOwnable is HubAware {
         _;
     }
 
-    function _validateMsgSenderHubOwner() internal {
+    function _validateMsgSenderHubOwner() internal view {
         if (msg.sender != DREM_HUB.owner()) revert NotHubOwner();
     }
     

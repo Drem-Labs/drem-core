@@ -73,7 +73,6 @@ contract DremERC20Test is Test {
 }
 
 contract HubAwareHarness is HubAware {
-
     constructor(address _dremHub) HubAware(_dremHub) {}
     function getDremHub() external returns (address){
         return address(DREM_HUB);

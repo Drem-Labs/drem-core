@@ -44,6 +44,7 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     /**
      * PROBLEM: CANT HAVE BOTH ETH AND USD AGGREGATOR FOR ASSETS under current implementation
+     * really trivial. just use weth
      */
 
     function removeSupportedAsset(address _asset) external onlyHubOwner {

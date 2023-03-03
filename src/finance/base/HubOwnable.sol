@@ -5,7 +5,7 @@ import {HubAware} from "./HubAware.sol";
 
 error NotHubOwner();
 
-abstract contract HubOwner is HubAware {
+abstract contract HubOwnable is HubAware {
     constructor(address _dremHub) HubAware(_dremHub){}
 
     modifier onlyHubOwner() {

@@ -9,6 +9,7 @@ abstract contract HubOwner is HubAware {
     constructor(address _dremHub) HubAware(_dremHub){}
 
     modifier onlyHubOwner() {
+        _validateMsgSenderHubOwner();
         _;
     }
 

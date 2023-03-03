@@ -2,7 +2,7 @@
 pragma solidity =0.8.17;
 
 import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
-import {AggregatorV3Interface} from "@chainlink/src/interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
 
 /**
  * Specs:
@@ -15,7 +15,10 @@ import {AggregatorV3Interface} from "@chainlink/src/interfaces/AggregatorV3Inter
 
  contract PriceAggregator is IPriceAggregator {
 
-    uint256 constant CHAINLINK_DECIMALS = 8;
+    uint256 private constant CHAINLINK_DECIMALS = 8;
+    uint256 private constant STAGNANT_RATE_LIMIT = 31;
+
+
 
     enum RateAsset{
         USD,
@@ -23,19 +26,23 @@ import {AggregatorV3Interface} from "@chainlink/src/interfaces/AggregatorV3Inter
     }
 
     struct AggregatorInfo {
-        address aggregatorAddress;
+        AggregatorV3Interface aggregatorAddress;
         RateAsset rateAsset;
     }
 
-    struct SupporteAssetInfo {
+    struct SupportedAssetInfo {
         address supportedAsset;
         address aggregatorAddress;
         RateAsset rateAsset;
-        uint256 decimals;
+        uint256 decimals; // To use units or decimals here...  Prob units...
     }
 
-    mapping(address => uint256) supportedAssetToDecimals;
+    mapping(address => uint256) supportedAssetToUnit;
     mapping(address => address) supportedAssetToAggregator;
 
+    function addSupportedAsset() external {}
+
     function getAssetPrice(address denominationAsset, address outputAsset) external view {}
+
+    function _getLatestPrice() internal view {}
  }

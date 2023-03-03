@@ -54,6 +54,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // Frozen: Nothing is possible except withdrawls; 
     function setProtocolState(DataTypes.ProtocolState _state) external onlyOwner {
         protocolState = _state;
+        emit Events.ProtocolStateSet(_state);
     }
 
     function setVaultDeployer(address _vaultDeployer) external onlyOwner {

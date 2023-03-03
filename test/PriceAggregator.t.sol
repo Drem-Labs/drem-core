@@ -34,6 +34,9 @@ contract Admin is PriceAggregatorHelper {
     }
 
     function test_AddSupportedAsset() public {
+        vm.expectEmit(true, true, true, true);
+        emit Events.SupportedAssetAdded(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
         priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
         DataTypes.SupportedAssetInfo memory _aaveInfo = priceAggregator.getSupportedAssetInfo(AAVE_ADDRESS);

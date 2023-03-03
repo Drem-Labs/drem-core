@@ -4,6 +4,7 @@ pragma solidity =0.8.17;
 import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
+import {Events} from "../libraries/Events.sol";
 import {HubOwnable} from "../base/HubOwnable.sol";
 import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
@@ -37,10 +38,21 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
             rateAsset: _rateAsset,
             units: _units
         });
+
+        emit Events.SupportedAssetAdded(_asset, _aggregator, _rateAsset);
     }
 
+    /**
+     * PROBLEM: CANT HAVE BOTH ETH AND USD AGGREGATOR FOR ASSETS under current implementation
+     */
+
     function removeSupportedAsset(address _asset) external onlyHubOwner {
+
+        DataTypes.SupportedAssetInfo memory _info = assetToInfo[_asset];
+
         delete assetToInfo[_asset];
+
+        emit Events.SupportedAssetRemoved(_asset, _info.aggregator, _info.rateAsset);
     }
 
     function getAssetPrice(address denominationAsset, address outputAsset) external view returns(uint256) {}

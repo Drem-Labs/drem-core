@@ -223,6 +223,10 @@ contract Admin is DremHubHelper {
 
     function test_SetGlobalState() public {
         DataTypes.ProtocolState _state = DataTypes.ProtocolState.Frozen;
+
+        vm.expectEmit(true, true, true, true);
+        emit Events.ProtocolStateSet(_state);
+
         dremHub.setProtocolState(_state);
 
         // AssertEq can't process enums

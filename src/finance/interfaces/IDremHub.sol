@@ -2,6 +2,7 @@
 pragma solidity =0.8.17;
 
 import {DataTypes} from "../libraries/DataTypes.sol";
+import {IOwnable} from "./IOwnable.sol";
 
 interface IDremHub {
     /**

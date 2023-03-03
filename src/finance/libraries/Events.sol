@@ -1,7 +1,15 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {DataTypes} from "./DataTypes.sol";
+
 library Events {
+
+    /////////////////////////////
+    //     Drem Hub Events     //
+    /////////////////////////////
+
     /**
      * @dev Emitted when whitelisted step is added
      *
@@ -20,9 +28,37 @@ library Events {
      */
     event WhitelistedStepRemoved(address interactionAddress, bytes4 functionSelector, bytes encodedArgs);
 
+    /**
+     * 
+     */
     event FundDeployerSet();
 
-    event GlobalStateUpdated();
+    /**
+     * @dev Emitted when protocol state is set 
+     * 
+     * @param _state the new protocol state
+     */
+    event ProtocolStateSet(DataTypes.ProtocolState _state);
 
+    /**
+     * @dev Emitted when global trading is set 
+     *
+     * @param setting the new setting 
+     */
     event GlobalTradingSet(bool setting);
+
+    /////////////////////////////////////
+    //     Price Aggregator Events     //
+    /////////////////////////////////////
+
+    /**
+     *
+     */
+    event SupportedAssetAdded(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
+
+     /**
+      * 
+      */
+    event SupportedAssetRemoved(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
+
 }

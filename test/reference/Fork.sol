@@ -2,9 +2,10 @@
 pragma solidity =0.8.17;
 
 import "forge-std/Test.sol";
+import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {Helper} from "./Helper.sol";
 
-contract Fork is Helper, Test {
+abstract contract Fork is Helper, Test {
     /**
      * Polygon
      */
@@ -12,11 +13,21 @@ contract Fork is Helper, Test {
     string POLYGON_RPC_URL = vm.envString("POLYGON_RPC_URL");
     uint256 constant POLYGON_FORK_BLOCK = 39784975;
 
+    /**
+     * Polygon aggregator contracts
+     * Reference: https://docs.chain.link/data-feeds/price-feeds/addresses/?network=polygon 
+     */
+    AggregatorV3Interface AAVE_TO_USD_PRICE_FEED;
+    AggregatorV3Interface DAI_TO_USD_PRICE_FEED;
+    AggregatorV3Interface USDC_TO_USD_PRICE_FEED;
+    AggregatorV3Interface USDT_TO_USD_PRICE_FEED; 
+
     function setUp() public virtual {
         vm.createSelectFork(POLYGON_RPC_URL);
-        // USDC_PER_ETH_PRICE_FEED = AggregatorV3Interface(0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419);
-        // USDC_PER_BTC_PRICE_FEED = AggregatorV3Interface(0xF4030086522a5bEEa4988F8cA5B36dbC97BeE88c);
-        // WBTC_PER_BTC_PRICE_FEED = AggregatorV3Interface(0xfdFD9C85aD200c506Cf9e21F1FD8dd01932FBB23);
+        AAVE_TO_USD_PRICE_FEED = AggregatorV3Interface(0x72484B12719E23115761D5DA1646945632979bB6);
+        DAI_TO_USD_PRICE_FEED = AggregatorV3Interface(0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D);
+        USDC_TO_USD_PRICE_FEED = AggregatorV3Interface(0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7);
+        USDT_TO_USD_PRICE_FEED = AggregatorV3Interface(0x0A6513e40db6EB1b165753AD52E80663aeA50545); 
     }
 
     // function getEthToUSDCPriceAndDecimals() internal view returns (int256, uint8) {

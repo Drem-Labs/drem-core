@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
 // To Do: Order alphabetically
 library DataTypes {
     
@@ -48,5 +50,14 @@ library DataTypes {
     /**
      *  Price aggregator data types
      */
-     
+    enum RateAsset{
+        USD,
+        ETH
+    }
+
+    struct SupportedAssetInfo {
+        AggregatorV3Interface aggregator;
+        RateAsset rateAsset;
+        uint256 units; 
+    }
 }

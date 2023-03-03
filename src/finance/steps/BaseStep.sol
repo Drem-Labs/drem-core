@@ -16,7 +16,7 @@ abstract contract BaseStep is IStep {
 
     // set the state (this will be checked at each function with an or statement, not sure a modifier is necessary here)
     // this state should be checked on init, wind, and unwind (too complex for checking on validate)
-    DataTypes.StepState public state;
+    DataTypes.StepState private state;
 
     // set the hub owner in the constructor, that's all
     constructor (address _hub) {
@@ -29,6 +29,7 @@ abstract contract BaseStep is IStep {
         {
             revert NotHubOwner();
         }
+        _;
     }
 
     // set the state (does not matter if the step is ownable, should default to the hub owner)

@@ -5,6 +5,7 @@ import {Ownable2StepUpgradeable} from "@openzeppelin-upgradeable/contracts/acces
 import {Initializable} from "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {IDremHub} from "../interfaces/IDremHub.sol";
+import {IOwnable} from "../interfaces/IOwnable.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Events} from "../libraries/Events.sol";
 
@@ -53,6 +54,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // Frozen: Nothing is possible except withdrawls; 
     function setProtocolState(DataTypes.ProtocolState _state) external onlyOwner {
         protocolState = _state;
+        emit Events.ProtocolStateSet(_state);
     }
 
     function setVaultDeployer(address _vaultDeployer) external onlyOwner {

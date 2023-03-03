@@ -16,9 +16,16 @@ import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3
  contract PriceAggregator is IPriceAggregator {
 
     uint256 private constant CHAINLINK_DECIMALS = 8;
+    // Either should be 31 seconds or 24 hours + 1
     uint256 private constant STAGNANT_RATE_LIMIT = 31;
+    // Reference: https://polygonscan.com/address/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270
+    address private constant WMATIC = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
 
+    address immutable DREM_HUB;
 
+    constructor (address _dremHub) {
+        DREM_HUB = _dremHub;
+    }
 
     enum RateAsset{
         USD,

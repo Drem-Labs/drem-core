@@ -1,35 +1,39 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+library Errors {
 
 /////////////////////////
 ///   Global Errors   ///
 /////////////////////////
-
-library Errors {
 
 /**
 *  Non-whitelisted step cannot be removed
 */
 error StepNotWhitelisted();
 
+/**
+*  Input is address(0)
+*/
+error ZeroAddress();
+
 ////////////
 /// Base ///
 ////////////
 
 /**
- * Msg sender is not hub owner
- */
+* Msg sender is not hub owner
+*/
 error NotHubOwner();
 
 /**
- * Protocol is paused or frozen
- */
+* Protocol is paused or frozen
+*/
 error ProtocolPausedOrFrozen();
 
 /**
- * Protocol is frozen 
- */
+* Protocol is frozen 
+*/
 error ProtocolFrozen();
 
 //////////////////
@@ -68,5 +72,12 @@ error TradingDisabled();
 error InvalidNumberOfSteps();
 error InvalidStepsLength();
 error StepsAndArgsNotSameLength();
+
+////////////////////////////
+///   Price Aggregator   ///
+////////////////////////////
+
+error StaleUSDPrice();
+error StaleEthPrice();
 
 }

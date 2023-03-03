@@ -19,6 +19,8 @@ abstract contract Fork is Helper, Test {
      */
     AggregatorV3Interface AAVE_TO_USD_PRICE_FEED;
     AggregatorV3Interface DAI_TO_USD_PRICE_FEED;
+    AggregatorV3Interface ETH_TO_USD_PRICE_FEED;
+    AggregatorV3Interface MATIC_TO_USD_PRICE_FEED;
     AggregatorV3Interface USDC_TO_USD_PRICE_FEED;
     AggregatorV3Interface USDT_TO_USD_PRICE_FEED; 
 
@@ -26,6 +28,8 @@ abstract contract Fork is Helper, Test {
         vm.createSelectFork(POLYGON_RPC_URL);
         AAVE_TO_USD_PRICE_FEED = AggregatorV3Interface(0x72484B12719E23115761D5DA1646945632979bB6);
         DAI_TO_USD_PRICE_FEED = AggregatorV3Interface(0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D);
+        ETH_TO_USD_PRICE_FEED = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
+        MATIC_TO_USD_PRICE_FEED = AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0);
         USDC_TO_USD_PRICE_FEED = AggregatorV3Interface(0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7);
         USDT_TO_USD_PRICE_FEED = AggregatorV3Interface(0x0A6513e40db6EB1b165753AD52E80663aeA50545); 
     }

@@ -3,8 +3,9 @@ pragma solidity =0.8.17;
 
 import {IVault} from "../../interfaces/IVault.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
-import {StateAware} from "../../base/StateAware.sol";
 import {DremERC20} from "../../base/DremERC20.sol";
+import {Errors} from "../../libraries/Errors.sol";
+import {StateAware} from "../../base/StateAware.sol";
 
 /**
  *   INVARIANTS
@@ -33,7 +34,7 @@ contract Vault is IVault, DremERC20  {
         string calldata _symbol,
         DataTypes.StepInfo[] calldata _steps,
         bytes[] calldata _encodedArgsPerStep ) external initializer {
-        if (_steps.length != _encodedArgsPerStep.length) revert StepsAndArgsNotSameLength();
+        if (_steps.length != _encodedArgsPerStep.length) revert Errors.StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
         _validateSteps(_steps, _encodedArgsPerStep);
         _addSteps(_steps);
@@ -61,9 +62,9 @@ contract Vault is IVault, DremERC20  {
         return steps;
     }
 
-    function _validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) internal {
+    function _validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) internal view {
         
-        if(_steps.length > MAX_STEPS || _steps.length == 0) revert InvalidNumberOfSteps();
+        if(_steps.length > MAX_STEPS || _steps.length == 0) revert Errors.InvalidNumberOfSteps();
 
         for (uint256 i; i < _steps.length; ){
             _validateStep(_steps[i], _encodedArgsPerStep[i]);
@@ -71,8 +72,8 @@ contract Vault is IVault, DremERC20  {
         }
     }
 
-    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArgs) internal {
-        if(!(DREM_HUB.isStepWhitelisted(_step, _encodedArgs))) revert StepNotWhitelisted();
+    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArgs) internal view{
+        if(!(DREM_HUB.isStepWhitelisted(_step, _encodedArgs))) revert Errors.StepNotWhitelisted();
     }
 
     function _addSteps(DataTypes.StepInfo[] calldata _steps) internal {

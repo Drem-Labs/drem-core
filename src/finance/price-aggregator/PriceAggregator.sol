@@ -4,6 +4,7 @@ pragma solidity =0.8.17;
 import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
+import {Errors} from "../libraries/Errors.sol";
 import {Events} from "../libraries/Events.sol";
 import {HubOwnable} from "../base/HubOwnable.sol";
 import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";

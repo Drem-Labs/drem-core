@@ -4,6 +4,7 @@ pragma solidity =0.8.17;
 import "forge-std/Test.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {Errors} from "../src/finance/libraries/Errors.sol";
 import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
 import {Helper} from "./reference/Helper.sol";
@@ -17,11 +18,11 @@ contract VaultHarness is Vault {
         Vault._addSteps(_steps);
     }
 
-    function validateStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external {
+    function validateStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view {
         Vault._validateStep(_step, _encodedArgs);
     }
 
-    function validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) external {
+    function validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) external view {
         Vault._validateSteps(_steps, _encodedArgsPerStep);
     }
 }
@@ -93,7 +94,7 @@ contract InternalFunctions is VaultHelper {
         DataTypes.StepInfo[] memory _steps;
         bytes[] memory _encodedArgsPerStep;
 
-        vm.expectRevert(IVault.InvalidNumberOfSteps.selector);
+        vm.expectRevert(Errors.InvalidNumberOfSteps.selector);
         vaultHarness.validateSteps(_steps, _encodedArgsPerStep);
     }
 
@@ -105,7 +106,7 @@ contract InternalFunctions is VaultHelper {
             steps.push();
         }
 
-        vm.expectRevert(IVault.InvalidNumberOfSteps.selector);
+        vm.expectRevert(Errors.InvalidNumberOfSteps.selector);
         vaultHarness.validateSteps(steps, _encodedArgsPerStep);
 
         assertEq(steps.length, 11);

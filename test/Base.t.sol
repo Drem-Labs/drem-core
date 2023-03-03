@@ -6,6 +6,7 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremERC20} from "../src/finance/base/DremERC20.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
+import {Errors} from "../src/finance/libraries/Errors.sol";
 import {HubAware} from "../src/finance/base/HubAware.sol";
 import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
@@ -74,7 +75,7 @@ contract DremERC20Test is Test {
 
 contract HubAwareHarness is HubAware {
     constructor(address _dremHub) HubAware(_dremHub) {}
-    function getDremHub() external returns (address){
+    function getDremHub() external view returns (address){
         return address(DREM_HUB);
     }
 }

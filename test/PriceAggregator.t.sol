@@ -6,6 +6,7 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
+import {Errors} from "../src/finance/libraries/Errors.sol";
 import {Events} from "../src/finance/libraries/Events.sol";
 import {Fork} from "./reference/Fork.sol";
 import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
@@ -52,7 +53,7 @@ contract Admin is PriceAggregatorHelper {
 
     function test_AddSupportedAsset_RevertIf_NotHubOwner() public {
         vm.startPrank(address(0x67));
-        vm.expectRevert(HubOwnable.NotHubOwner.selector);
+        vm.expectRevert(Errors.NotHubOwner.selector);
         priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
         vm.stopPrank();

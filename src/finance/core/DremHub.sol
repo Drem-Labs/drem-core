@@ -7,6 +7,7 @@ import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/U
 import {IDremHub} from "../interfaces/IDremHub.sol";
 import {IOwnable} from "../interfaces/IOwnable.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
+import {Errors} from "../libraries/Errors.sol";
 import {Events} from "../libraries/Events.sol";
 
 // Initializable is inherited from Ownable2StepUpgradeable
@@ -58,7 +59,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     function setVaultDeployer(address _vaultDeployer) external onlyOwner {
-        if (_vaultDeployer.code.length == 0) revert InvalidVaultDeployerAddress();
+        if (_vaultDeployer.code.length == 0) revert Errors.InvalidVaultDeployerAddress();
         vaultDeployer = _vaultDeployer;
     }
 
@@ -84,7 +85,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      */
 
     function dremHubBeforeTransferHook() external view {
-        if ((!(isTradingAllowed)) || protocolState == DataTypes.ProtocolState.Frozen) revert TradingDisabled();
+        if ((!(isTradingAllowed)) || protocolState == DataTypes.ProtocolState.Frozen) revert Errors.TradingDisabled();
     }
 
     function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs)
@@ -116,7 +117,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting)
         internal
     {
-        if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert InvalidStep();
+        if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert Errors.InvalidStep();
 
         bytes32 _stepHash = _getStepHash(_step);
         bytes32 _encodedArgsHash = keccak256(_encodedArgs);

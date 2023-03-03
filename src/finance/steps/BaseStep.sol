@@ -5,11 +5,13 @@ import {IStep} from "./IStep.sol";
 import {IOwnable} from "../interfaces/IOwnable.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 
+
+// this is really where any useful modifiers and universal data goes
 abstract contract BaseStep is IStep {
     // map the vault address and step to the fixed argument (allow this to be decoded in the derivative step contracts)
     mapping(address => mapping(uint256 => bytes)) public stepData;
 
-    // keep track of the hub owner, can be mutable, but you need to check the owner of the previous hum
+    // keep track of the hub owner, can be mutable, but you need to check the owner of the previous hum (storing here eliminates a contract call)
     address public hubOwner;
 
     // set the state (this will be checked at each function with an or statement, not sure a modifier is necessary here)
@@ -37,6 +39,12 @@ abstract contract BaseStep is IStep {
     }
 
     // set the hub owner (callable)
+    function setHubOwner(address _hub) external onlyHubOwner {
+        _setHubOwner(_hub);
+    }
 
     // set the hub owner (internal)
+    function _setHubOwner(address _hub) internal {
+        hubOwner = IOwnable(_hub).owner();
+    }
 }

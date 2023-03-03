@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-import {IStep} from "../../interfaces/IStep.sol";
+import {IStep} from "..//IStep.sol";
 
 /**
  * Step actions include: 

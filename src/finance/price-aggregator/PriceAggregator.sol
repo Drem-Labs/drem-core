@@ -3,6 +3,7 @@ pragma solidity =0.8.17;
 
 import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import {DataTypes} from "../libraries/DataTypes.sol";
 import {HubOwnable} from "../base/HubOwnable.sol";
 import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
@@ -26,24 +27,12 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     constructor (address _dremHub) HubOwnable(_dremHub) {}
 
-    enum RateAsset{
-        USD,
-        ETH
-    }
+    mapping(address => DataTypes.SupportedAssetInfo) assetToInfo;
 
-    struct SupportedAssetInfo {
-        AggregatorV3Interface aggregator;
-        RateAsset rateAsset;
-        uint256 units; // To use units or decimals here...  Prob units...
-    }
-
-    mapping(address => SupportedAssetInfo) assetToInfo;
-
-    function addSupportedAsset(address _asset, AggregatorV3Interface _aggregator, RateAsset _rateAsset) external onlyHubOwner {
+    function addSupportedAsset(address _asset, AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) external onlyHubOwner {
         uint256 _units = 10 ** (ERC20(_asset).decimals());
 
-        
-        assetToInfo[_asset] = SupportedAssetInfo({
+        assetToInfo[_asset] = DataTypes.SupportedAssetInfo({
             aggregator: _aggregator,
             rateAsset: _rateAsset,
             units: _units
@@ -54,13 +43,13 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         delete assetToInfo[_asset];
     }
 
-    function getAssetPrice(address denominationAsset, address outputAsset) external view {}
+    function getAssetPrice(address denominationAsset, address outputAsset) external view returns(uint256) {}
 
     function isAssetSupported(address _asset) external view returns(bool) {
         return address(assetToInfo[_asset].aggregator) != address(0);
     }
 
-    function getSupportedAssetInfo(address _asset) external view returns (SupportedAssetInfo memory) {
+    function getSupportedAssetInfo(address _asset) external view returns (DataTypes.SupportedAssetInfo memory) {
         return assetToInfo[_asset];
     }
 

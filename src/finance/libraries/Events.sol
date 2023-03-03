@@ -2,6 +2,11 @@
 pragma solidity =0.8.17;
 
 library Events {
+
+    //////////////////////
+    //     Drem Hub     //
+    //////////////////////
+
     /**
      * @dev Emitted when whitelisted step is added
      *

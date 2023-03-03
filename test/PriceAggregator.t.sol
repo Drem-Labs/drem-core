@@ -8,6 +8,7 @@ import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
 import {Events} from "../src/finance/libraries/Events.sol";
 import {Fork} from "./reference/Fork.sol";
+import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 import {PriceAggregator} from "../src/finance/price-aggregator/PriceAggregator.sol";
 
@@ -50,10 +51,11 @@ contract Admin is PriceAggregatorHelper {
     }
 
     function test_AddSupportedAsset_RevertIf_NotHubOwner() public {
-        // vm.startPrank(address(0x67));
+        vm.startPrank(address(0x67));
+        vm.expectRevert(HubOwnable.NotHubOwner.selector);
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
-
-        // vm.stopPrank();
+        vm.stopPrank();
     }
 
     function test_RemoveSupportedAsset() public {

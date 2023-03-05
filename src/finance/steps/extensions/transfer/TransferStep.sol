@@ -26,7 +26,7 @@ contract TransferStep is BaseStep {
     // initialized with the denomination asset and the tracked assets
     function init(uint256 _argIndex, bytes calldata _fixedArgs) external {
         // turn the fixed args into a useful struct
-        TransferLib.FixedArgData fixedArgData = abi.decode(_fixedArgs, (TransferLib.FixedArgData));
+        TransferLib.FixedArgData memory fixedArgData = abi.decode(_fixedArgs, (TransferLib.FixedArgData));
 
         // validate the denomination asset
         if (!denominationAssets[fixedArgData.denominationAsset]) revert TransferLib.NotDenominationAsset();

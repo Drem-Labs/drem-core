@@ -14,9 +14,13 @@ contract TransferStep is BaseStep {
     // valuer
     address public GAValuer;
 
+    // entrance/exit fees
+    TransferLib.FeeData public fees;
+
     // constructor --> set the GAValuer
-    constructor(address _dremHub, address _GAValuer) BaseStep(_dremHub) {
+    constructor(address _dremHub, address _GAValuer, TransferLib.FeeData memory _fees) BaseStep(_dremHub) {
         _setGAValuer(_GAValuer);
+        _setFees(_fees);
     }
 
     // initialized with the denomination asset and the tracked assets
@@ -25,33 +29,46 @@ contract TransferStep is BaseStep {
         TransferLib.FixedArgData fixedArgData = abi.decode(_fixedArgs, (TransferLib.FixedArgData));
 
         // validate the denomination asset
-        if (!denominationAssets[fixedArgData.denominationAsset]) revert NotDenominationAsset();
+        if (!denominationAssets[fixedArgData.denominationAsset]) revert TransferLib.NotDenominationAsset();
 
         // store the stepData (can store to msg.sender to ensure that only the vaults can interact with this)
         stepData[msg.sender][_argIndex] = fixedArgData;
     }
 
     // wind function --> transfer some assets
-    function wind(uint256 _shares) external {
+    function wind(uint256 _argIndex, bytes memory _variableArgs) external {
+        // get the shares from the args
+
         // calculate the number of funds per share --> get the value of the vault
 
         // figure out who the caller is
+
+        // transfer shares in
 
         // mint some shares
 
         // assume that the funds are in the wallet (not in the vault) --> transfer them into the vault
 
+        // transfer fees
+
     }
 
     // unwind function --> transfer the assets back
-    function unwind(uint256 _shares) external {
+    function unwind(uint256 _argIndex, bytes memory _variableArgs) external {
+        // get the shares from the args
+
         // calculate the number of funds per share --> get the value of the vault
 
         // figure out who the caller is
 
+        // ensure that they are allowed to liquidate these many shares
+
         // burn some shares
 
         // push the funds from the vault to the user
+
+        // transfer fees
+
     }
 
     // set allowed denomination assets (must be very liquid, not just tracked)
@@ -64,8 +81,18 @@ contract TransferStep is BaseStep {
         _setGAValuer(_GAValuer);
     }
 
+    // set the fees (external)
+    function setFees(TransferLib.FeeData memory _fees) external onlyHubOwner {
+        _setFees(_fees);
+    }
+
     // set the valuer (internal)
     function _setGAValuer(address _GAValuer) internal {
         GAValuer = _GAValuer;
+    }
+
+    // set the step fees (internal)
+    function _setFees(TransferLib.FeeData memory _fees) internal {
+        fees = _fees;
     }
 }

@@ -10,7 +10,7 @@ interface IStep {
 
     // wind and unwind the step to move forwards and backwards
     // there should really not be
-    function wind(uint256 _shares) external;
-    function unwind(uint256 _shares) external;
+    function wind(uint256 _argIndex, bytes memory _variableArgs) external;
+    function unwind(uint256 _argIndex, bytes memory _variableArgs) external;
 }
 

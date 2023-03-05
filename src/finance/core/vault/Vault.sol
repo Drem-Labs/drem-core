@@ -40,11 +40,11 @@ contract Vault is IVault, DremERC20  {
         _addSteps(_steps);
     }
 
-    function mintShares(uint256 _shareAmount) external {
+    function mintShares(uint256 _shareAmount, address _to) external {
         // Execute steps...
     }
 
-    function burnShares(uint256 _shareAmount) external {
+    function burnShares(uint256 _shareAmount, address _to) external {
         // Need certain withdrawl steps...
     }
 

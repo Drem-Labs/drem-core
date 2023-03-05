@@ -7,5 +7,5 @@ interface IFeeController {
     function fees(address vault) returns(uint256);
 
     // make calculation easy (all in one place)
-    function calculateFee(uint256 fundsIn, uint256 vault);
+    function calculateFee(uint256 fundsIn, uint256 vault) returns(uint256);
 }

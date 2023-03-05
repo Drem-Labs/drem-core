@@ -6,6 +6,7 @@ import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.s
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
+import {Errors} from "../src/finance/libraries/Errors.sol";
 import {Events} from "../src/finance/libraries/Events.sol";
 import {Helper} from "./reference/Helper.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
@@ -165,7 +166,7 @@ contract Admin is DremHubHelper {
             DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: bytes4(0)});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
-        vm.expectRevert(IDremHub.InvalidStep.selector);
+        vm.expectRevert(Errors.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
     }
 
@@ -174,7 +175,7 @@ contract Admin is DremHubHelper {
             DataTypes.StepInfo({interactionAddress: address(0), functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
-        vm.expectRevert(IDremHub.InvalidStep.selector);
+        vm.expectRevert(Errors.InvalidStep.selector);
         dremHub.removeWhitelistedStep(_step, _encodedArgs);
     }
 
@@ -183,14 +184,14 @@ contract Admin is DremHubHelper {
             DataTypes.StepInfo({interactionAddress: USDC_ADDRESS, functionSelector: bytes4(0)});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
-        vm.expectRevert(IDremHub.InvalidStep.selector);
+        vm.expectRevert(Errors.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
     }
 
     function test_SetVaultDeployer_RevertIf_AdressIsEOA() public {
         address _eoaAddress = address(0x1);
 
-        vm.expectRevert(IDremHub.InvalidVaultDeployerAddress.selector);
+        vm.expectRevert(Errors.InvalidVaultDeployerAddress.selector);
         dremHub.setVaultDeployer(_eoaAddress);
     }
 
@@ -243,19 +244,19 @@ contract ExternalFunctions is DremHubHelper {
     function test_DremHubTransferHook_RevertIf_TradingNotAllowed() public {
         dremHub.setGlobalTrading(false);
 
-        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        vm.expectRevert(Errors.TradingDisabled.selector);
         dremHub.dremHubBeforeTransferHook();
     }
 
     function test_DremHubTransferHook_RevertIf_ProtocolPaused() public {
         dremHub.setProtocolState(DataTypes.ProtocolState.Paused);
-        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        vm.expectRevert(Errors.TradingDisabled.selector);
         dremHub.dremHubBeforeTransferHook();
     }
 
     function test_DremHubTransferHook_RevertIf_ProtocolFrozen() public {
         dremHub.setProtocolState(DataTypes.ProtocolState.Frozen);
-        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        vm.expectRevert(Errors.TradingDisabled.selector);
         dremHub.dremHubBeforeTransferHook();
     }
 

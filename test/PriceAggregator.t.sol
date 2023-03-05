@@ -2,12 +2,15 @@
 pragma solidity =0.8.17;
 
 import "forge-std/Test.sol";
+import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3Interface.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {ERC20} from "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import {DataTypes} from "../src/finance/libraries/DataTypes.sol";
 import {DremHub} from "../src/finance/core/DremHub.sol";
+import {Errors} from "../src/finance/libraries/Errors.sol";
 import {Events} from "../src/finance/libraries/Events.sol";
 import {Fork} from "./reference/Fork.sol";
+import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 import {PriceAggregator} from "../src/finance/price-aggregator/PriceAggregator.sol";
 
@@ -50,10 +53,22 @@ contract Admin is PriceAggregatorHelper {
     }
 
     function test_AddSupportedAsset_RevertIf_NotHubOwner() public {
-        // vm.startPrank(address(0x67));
+        vm.startPrank(address(0x67));
 
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
-        // vm.stopPrank();
+        vm.stopPrank();
+    }
+
+    function test_AddSupportedAsset_RevertIf_AssetIsZeroAddress() public {
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        priceAggregator.addSupportedAsset(address(0), AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+    }
+
+    function test_AddSupportedAsset_RevertIf_AggregatorIsZeroAddress() public {
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AggregatorV3Interface(address(0)), DataTypes.RateAsset.USD);
     }
 
     function test_RemoveSupportedAsset() public {
@@ -67,5 +82,58 @@ contract Admin is PriceAggregatorHelper {
         assertEq(_aaveInfo.units, 0); 
     }
 
-    function test_RemoveSupportedAsset_RevertIf_NotHubOwner() public {} 
+    function test_RemoveSupportedAsset_RevertIf_NotHubOwner() public {
+        vm.startPrank(address(0x67));
+        
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        vm.stopPrank();
+    }
+
+    function test_RemoveSupportedAsset_RevertIf_AssetIsZeroAddress() public {
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        priceAggregator.removeSupportedAsset(address(0));
+    } 
+
+    function test_SetMaticToUSDAggregator() public {
+        vm.expectEmit(true, true, true, true);
+        emit Events.MaticToUSDAggregatorSet(MATIC_TO_USD_PRICE_FEED);
+        priceAggregator.setMaticToUSDAggregator(MATIC_TO_USD_PRICE_FEED);
+
+    }
+
+    function test_SetMaticToUSDAggregator_RevertIf_NotHubOwner() public {
+        vm.startPrank(address(0x67));
+        
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        priceAggregator.setMaticToUSDAggregator(MATIC_TO_USD_PRICE_FEED);
+
+        vm.stopPrank(); 
+    }
+
+    function test_SetMaticToUSDAggregator_RevertIf_AggregatorIsZeroAddress() public {
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        priceAggregator.setMaticToUSDAggregator(AggregatorV3Interface(address(0)));
+    }
+
+    function test_SetEthToUSDAggregator() public {
+        vm.expectEmit(true, true, true, true);
+        emit Events.EthToUSDAggregatorSet(ETH_TO_USD_PRICE_FEED);
+        priceAggregator.setEthToUSDAggregator(ETH_TO_USD_PRICE_FEED);
+    }
+
+    function test_SetEthToUSDAggregator_RevertIf_NotHubOwner() public {
+        vm.startPrank(address(0x67));
+        
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        priceAggregator.setEthToUSDAggregator(ETH_TO_USD_PRICE_FEED);
+
+        vm.stopPrank(); 
+    }
+
+    function test_SetEthToUSDAggregator_RevertIf_AggregatorIsZeroAddress() public {
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        priceAggregator.setEthToUSDAggregator(AggregatorV3Interface(address(0)));
+    }  
 } 

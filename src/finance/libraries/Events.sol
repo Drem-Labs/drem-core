@@ -51,6 +51,10 @@ library Events {
     //     Price Aggregator Events     //
     /////////////////////////////////////
 
+    event EthToUSDAggregatorSet(AggregatorV3Interface ethToUSDAggregator);
+
+    event MaticToUSDAggregatorSet(AggregatorV3Interface maticToUSDAggregator);
+
     /**
      *
      */

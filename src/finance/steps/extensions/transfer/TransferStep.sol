@@ -51,11 +51,15 @@ contract TransferStep is BaseStep {
         // get the funds from the args (this is a required input to transfer --> more exact to calculate shares out)
         TransferLib.VariableArgData memory argData = abi.decode(_variableArgs, (TransferLib.VariableArgData));
 
+        // get the fixed data
+        TransferLib.FixedArgData memory fixedData = stepData[msg.sender][_argIndex];
+
         // split the funds and fees
         TransferLib.Distribution memory fundSplit = _splitFunds(argData.funds);
 
+
         // get the value of the vault --> going to be in some safe denomination asset --> can use this as a true value to calculate shares
-        uint256 vaultValue = IGAValuer(GAValuer).getVaultValue(msg.sender, stepData[msg.sender].denominationAsset);
+        uint256 vaultValue = IGAValuer(GAValuer).getVaultValue(msg.sender, fixedData.denominationAsset);
 
         // get the number of shares of the vault
         uint256 vaultSharesOutstanding = IERC20(msg.sender).totalSupply();
@@ -75,11 +79,10 @@ contract TransferStep is BaseStep {
         IVault(msg.sender).mintShares(argData.shares, argData.caller);
 
         // transfer funds in (will revert if the user attempts to purchase shares they cannot afford)
-        IERC20 fundsContract(stepData[msg.sender].denominationAsset);
-        fundsContract.transferFrom(argData.caller, msg.sender, fundSplit.purchase);
+        IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.purchase);
 
         // transfer fees
-        fundsContract.transferFrom(argData.caller, msg.sender, fundSplit.fee);
+        IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.fee);
 
         // emit the event that some shares were minted at some price
         emit TransferLib.SharesRedeemed(argData.shares, fundSplit.purchase);
@@ -160,6 +163,6 @@ contract TransferStep is BaseStep {
 
     // set the fee controller (internal)
     function _setFeeController(address _feeController) internal {
-        feeController = _feeCollector;
+        feeController = _feeController;
     }
 }

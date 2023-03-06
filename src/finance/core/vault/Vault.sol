@@ -48,12 +48,15 @@ contract Vault is IVault, DremERC20  {
         _addSteps(_steps);
     }
 
-    function mintShares(uint256 _shareAmount, address _to) external onlyHubAllowed {
-        // Execute steps...
+    function mintShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
+        // call the internal mint function to send shares to the designated address
+        _mint(_to, _shareAmount);
+
     }
 
-    function burnShares(uint256 _shareAmount, address _to) external onlyHubAllowed {
-        // Need certain withdrawl steps...
+    function burnShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
+        // call the internal burn frunction to burn the shares of the disignated address
+        _burn(_to, _shareAmount);
     }
 
     // need to be able to call an execute function from steps

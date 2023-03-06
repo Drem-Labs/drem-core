@@ -76,7 +76,7 @@ contract TransferStep is BaseStep {
         }
 
         // mint some shares (accounting before transfer)
-        IVault(msg.sender).mintShares(argData.shares, argData.caller);
+        IVault(msg.sender).mintShares(argData.caller, argData.shares);
 
         // transfer funds in (will revert if the user attempts to purchase shares they cannot afford)
         IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.purchase);

@@ -18,8 +18,8 @@ interface IVault is IERC20Upgradeable {
     function getSteps() external view returns (DataTypes.StepInfo[] memory);
 
     // share accounting
-    function mintShares(uint256 shareAmount, address to) external;
-    function burnShares(uint256 shareAmount, address to) external;
+    function mintShares(address to, uint256 shareAmount) external;
+    function burnShares(address to, uint256 shareAmount) external;
 
     // executing transactions (for steps to access)
     function execute(address to, bytes calldata data) external returns(bytes memory);

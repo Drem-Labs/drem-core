@@ -96,15 +96,25 @@ contract TransferStep is BaseStep {
         // get the fixed data
         TransferLib.FixedArgData memory fixedData = stepData[msg.sender][_argIndex];
 
-        // figure out who the caller is
+        // calculate the number of funds per share --> get the value of the vault and shares outstanding
+        uint256 vaultValue = IGAValuer(GAValuer).getVaultValue(msg.sender, fixedData.denominationAsset);
+        uint256 vaultSharesOutstanding = IERC20(msg.sender).totalSupply();
 
-        // ensure that they are allowed to liquidate these many shares
+        // if the value per share is more than the value per share calculated, send more cash
+        uint256 fundsImplied = argData.shares * vaultValue / vaultSharesOutstanding;
+        if (argData.funds <= fundsImplied) {
+            argData.funds = fundsImplied;
+        }
+        // else, revert with insufficient shares
+        else {
+            revert TransferLib.InsufficientShares();
+        }
 
-        // calculate the number of funds per share --> get the value of the vault
-
-        // burn some shares
+        // burn some shares (the fact that they have these shares is validated in the ERC20 contract)
+        IVault(msg.sender).burnShares(argData.caller, argData.shares);
 
         // push the funds from the vault to the user (should be done in generalist function)
+
 
         // transfer fees (should be done in generalist function)
 

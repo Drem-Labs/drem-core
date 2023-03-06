@@ -5,6 +5,7 @@ library TransferLib {
     // errors
     error InvalidDenominationAsset();
     error InsufficientFunds();
+    error InsufficientShares();
 
     // events
     event SharesIssued(uint256 shares, uint256 price);

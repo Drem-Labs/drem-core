@@ -90,19 +90,23 @@ contract TransferStep is BaseStep {
 
     // unwind function --> transfer the assets back
     function unwind(uint256 _argIndex, bytes memory _variableArgs) external {
-        // get the shares from the args
+        // get the funds from the args (this is a required input to transfer --> more exact to calculate shares out)
+        TransferLib.VariableArgData memory argData = abi.decode(_variableArgs, (TransferLib.VariableArgData));
 
-        // calculate the number of funds per share --> get the value of the vault
+        // get the fixed data
+        TransferLib.FixedArgData memory fixedData = stepData[msg.sender][_argIndex];
 
         // figure out who the caller is
 
         // ensure that they are allowed to liquidate these many shares
 
+        // calculate the number of funds per share --> get the value of the vault
+
         // burn some shares
 
-        // push the funds from the vault to the user
+        // push the funds from the vault to the user (should be done in generalist function)
 
-        // transfer fees
+        // transfer fees (should be done in generalist function)
 
     }
 

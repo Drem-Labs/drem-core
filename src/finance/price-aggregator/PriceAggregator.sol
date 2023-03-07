@@ -57,6 +57,8 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     function addSupportedAsset(address _asset, AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) external onlyHubOwner {
         if(_asset == address(0) || address(_aggregator) == address(0)) revert Errors.ZeroAddress();
 
+        _validateAggregator(_aggregator, _rateAsset);
+
         uint256 _units = 10 ** (ERC20(_asset).decimals());
 
         assetToInfo[_asset] = DataTypes.SupportedAssetInfo({
@@ -70,7 +72,7 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     /**
      * PROBLEM: CANT HAVE BOTH ETH AND USD AGGREGATOR FOR ASSETS under current implementation
-     * really trivial. just use weth
+     * Should always use USDC... Faster heartbeat...
      */
 
     function removeSupportedAsset(address _asset) external onlyHubOwner {
@@ -113,14 +115,22 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     }
 
+    function _validateAggregator(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) internal view {
+        (, int256 _answer, , uint256 _updatedAt, ) = AggregatorV3Interface(_aggregator).latestRoundData();
+
+        if (!(_answer > 0)) revert Errors.InvalidAggregatorRate();
+
+        _validateStagnantRate(_updatedAt, _rateAsset);
+    }
+
     // Unsure if I should split this into three different internal functions
     function _validateStagnantRate(uint256 _updatedAt, DataTypes.RateAsset _rateAsset) internal view {
         if(_rateAsset == DataTypes.RateAsset.USD) {
-            if( STALE_USD_PRICE_LIMIT > (block.timestamp - _updatedAt)) revert Errors.StaleUSDPrice();
+            if( (block.timestamp - _updatedAt) > STALE_USD_PRICE_LIMIT) revert Errors.StaleUSDRate();
         }
         // _rateAsset == DataTypes.RateAsset.ETH
         else {
-            if( STALE_ETH_PRICE_LIMIT > (block.timestamp - _updatedAt)) revert Errors.StaleEthPrice();
+            if((block.timestamp - _updatedAt) > STALE_ETH_PRICE_LIMIT) revert Errors.StaleEthRate();
         }
     }
  }

@@ -25,7 +25,7 @@ abstract contract Fork is Helper, Test {
     AggregatorV3Interface USDT_TO_USD_PRICE_FEED; 
 
     function setUp() public virtual {
-        vm.createSelectFork(POLYGON_RPC_URL);
+        vm.createSelectFork(POLYGON_RPC_URL, POLYGON_FORK_BLOCK);
         AAVE_TO_USD_PRICE_FEED = AggregatorV3Interface(0x72484B12719E23115761D5DA1646945632979bB6);
         DAI_TO_USD_PRICE_FEED = AggregatorV3Interface(0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D);
         ETH_TO_USD_PRICE_FEED = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);

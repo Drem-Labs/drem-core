@@ -77,7 +77,8 @@ error StepsAndArgsNotSameLength();
 ///   Price Aggregator   ///
 ////////////////////////////
 
-error StaleUSDPrice();
-error StaleEthPrice();
+error InvalidAggregatorRate();
+error StaleUSDRate();
+error StaleEthRate();
 
 }

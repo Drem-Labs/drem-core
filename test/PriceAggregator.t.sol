@@ -14,6 +14,17 @@ import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 import {PriceAggregator} from "../src/finance/price-aggregator/PriceAggregator.sol";
 
+contract PriceAggregatorHarness is PriceAggregator {
+    constructor(address _dremHub) PriceAggregator(_dremHub) {}
+
+    function validateAggregator(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) external view {
+        _validateAggregator(_aggregator, _rateAsset);
+    }
+
+    function validateStagnantRate(uint256 _updatedAt, DataTypes.RateAsset _rateAsset) external view {
+        _validateStagnantRate(_updatedAt, _rateAsset);
+    }
+}
 /**
  * Fork inherits Helper
  */
@@ -21,6 +32,7 @@ contract PriceAggregatorHelper is Fork {
     DremHub dremHub;
     address dremHubImplementation;
     PriceAggregator priceAggregator;
+    PriceAggregatorHarness priceAggregatorHarness;
 
     function setUp() public virtual override {
         Fork.setUp();
@@ -28,6 +40,7 @@ contract PriceAggregatorHelper is Fork {
         dremHub = DremHub(address(new ERC1967Proxy(dremHubImplementation, new bytes(0))));
         dremHub.init();
         priceAggregator = new PriceAggregator(address(dremHub));
+        priceAggregatorHarness = new PriceAggregatorHarness(address(dremHub));
     }
 }
 
@@ -39,7 +52,9 @@ contract Admin is PriceAggregatorHelper {
     function test_AddSupportedAsset() public {
         vm.expectEmit(true, true, true, true);
         emit Events.SupportedAssetAdded(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-
+        console.log(block.timestamp);
+        (, , , uint256 _updatedAt, ) = AAVE_TO_USD_PRICE_FEED.latestRoundData();
+        console.log(_updatedAt);
         priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
         DataTypes.SupportedAssetInfo memory _aaveInfo = priceAggregator.getSupportedAssetInfo(AAVE_ADDRESS);
@@ -136,4 +151,46 @@ contract Admin is PriceAggregatorHelper {
         vm.expectRevert(Errors.ZeroAddress.selector);
         priceAggregator.setEthToUSDAggregator(AggregatorV3Interface(address(0)));
     }  
+} 
+
+contract Internal is PriceAggregatorHelper {
+    function setUp() public virtual override {
+        PriceAggregatorHelper.setUp();
+    }
+
+    function test_ValidateUSDRate() public {
+        uint256 _validUpdate = block.timestamp - priceAggregatorHarness.STALE_USD_PRICE_LIMIT();
+
+        DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.USD;
+
+        priceAggregatorHarness.validateStagnantRate(_validUpdate, _rateAsset);
+    }
+
+    function test_ValidateUSDRate_RevertIf_Stale() public {
+        uint256 _invalidUpdate = block.timestamp - priceAggregatorHarness.STALE_USD_PRICE_LIMIT() - 1;
+        DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.USD;
+
+        vm.expectRevert(Errors.StaleUSDRate.selector);
+        priceAggregatorHarness.validateStagnantRate(_invalidUpdate, _rateAsset);
+    }
+
+    function test_ValidateETHRate() public {
+        uint256 _validUpdate = block.timestamp - priceAggregatorHarness.STALE_ETH_PRICE_LIMIT();
+
+        DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.ETH;
+
+        priceAggregatorHarness.validateStagnantRate(_validUpdate, _rateAsset);
+    }
+
+    function test_ValidateETHRate_RevertIf_Stale() public {
+        uint256 _invalidUpdate = block.timestamp - priceAggregatorHarness.STALE_ETH_PRICE_LIMIT() - 1;
+        DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.ETH;
+
+        vm.expectRevert(Errors.StaleEthRate.selector);
+        priceAggregatorHarness.validateStagnantRate(_invalidUpdate, _rateAsset);
+    }
+
+    function test_ValidateStagnantRate_RevertIf_InvalidAggregatorRate() public {
+
+    }
 } 

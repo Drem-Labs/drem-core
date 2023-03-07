@@ -21,6 +21,7 @@ contract Vault is IVault, DremERC20  {
     uint256 constant MAX_STEPS = 10;
 
     DataTypes.StepInfo[] private steps;
+    bytes[] private fixedEncodedArgsPerStep;
 
     constructor(address _dremHub) DremERC20(_dremHub){}
 
@@ -36,6 +37,7 @@ contract Vault is IVault, DremERC20  {
      * @param _symbol Symbol for the ERC20
      */
      // init should not emit an event -- Fund deployer should
+     // each steps need fixed encoded data and variable encoded data
     function init( 
         address caller,
         string calldata _name,

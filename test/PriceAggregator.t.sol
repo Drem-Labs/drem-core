@@ -22,8 +22,8 @@ contract PriceAggregatorHarness is PriceAggregator {
         _validateAggregator(_aggregator, _rateAsset);
     }
 
-    function validateStagnantRate(uint256 _updatedAt, DataTypes.RateAsset _rateAsset) external view {
-        _validateStagnantRate(_updatedAt, _rateAsset);
+    function validateRate(int256 _answer, uint256 _updatedAt, DataTypes.RateAsset _rateAsset) external view {
+        _validateRate(_answer, _updatedAt, _rateAsset);
     }
 }
 /**
@@ -164,7 +164,7 @@ contract Internal is PriceAggregatorHelper {
 
         DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.USD;
 
-        priceAggregatorHarness.validateStagnantRate(_validUpdate, _rateAsset);
+        priceAggregatorHarness.validateRate(1, _validUpdate, _rateAsset);
     }
 
     function test_ValidateUSDRate_RevertIf_Stale() public {
@@ -172,7 +172,7 @@ contract Internal is PriceAggregatorHelper {
         DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.USD;
 
         vm.expectRevert(Errors.StaleUSDRate.selector);
-        priceAggregatorHarness.validateStagnantRate(_invalidUpdate, _rateAsset);
+        priceAggregatorHarness.validateRate(1, _invalidUpdate, _rateAsset);
     }
 
     function test_ValidateETHRate() public view {
@@ -180,7 +180,7 @@ contract Internal is PriceAggregatorHelper {
 
         DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.ETH;
 
-        priceAggregatorHarness.validateStagnantRate(_validUpdate, _rateAsset);
+        priceAggregatorHarness.validateRate(1, _validUpdate, _rateAsset);
     }
 
     function test_ValidateETHRate_RevertIf_Stale() public {
@@ -188,17 +188,25 @@ contract Internal is PriceAggregatorHelper {
         DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.ETH;
 
         vm.expectRevert(Errors.StaleEthRate.selector);
-        priceAggregatorHarness.validateStagnantRate(_invalidUpdate, _rateAsset);
+        priceAggregatorHarness.validateRate(1, _invalidUpdate, _rateAsset);
+    }
+
+    function test_ValidateRate_RevertIf_Zero() public {
+        uint256 _validUpdate = block.timestamp - priceAggregatorHarness.STALE_ETH_PRICE_LIMIT();
+
+        DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.ETH;
+
+        vm.expectRevert(Errors.InvalidAggregatorRate.selector); 
+        priceAggregatorHarness.validateRate(0, _validUpdate, _rateAsset);
     }
 
     function test_ValidateAggregator() public view {
         priceAggregatorHarness.validateAggregator(AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
     }
 
-    function test_ValidateAggregator_RevertIf_InvalidAnswer() public {
-        AggregatorV3Interface _mockAggregator = AggregatorV3Interface(new MockAggregator());
+    function test_Convert_SameRateAsset() public {}
 
-        vm.expectRevert(Errors.InvalidAggregatorRate.selector);
-        priceAggregatorHarness.validateAggregator(_mockAggregator, DataTypes.RateAsset.USD);
-    }
+    function test_Convert_InputUSD_OutputETH() public {}
+
+    function test_Convert_InputETH_OutputUSD() public {}
 } 

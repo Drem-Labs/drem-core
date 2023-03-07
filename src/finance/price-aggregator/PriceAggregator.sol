@@ -85,7 +85,10 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         emit Events.SupportedAssetRemoved(_asset, _info.aggregator, _info.rateAsset);
     }
 
-    function getAssetPrice(address denominationAsset, address outputAsset) external view returns(uint256) {}
+
+    function getAssetPrice(address denominationAsset, address outputAsset) external view returns(uint256) {
+
+    }
 
     function getEthToUSDAggregator() external view returns (AggregatorV3Interface) {
         return ethToUSDAggregator;
@@ -103,28 +106,65 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         return address(assetToInfo[_asset].aggregator) != address(0);
     }
 
-    function _calcUSDtoMaticConversion() internal view {}
+    function _calcUSDtoEthConversion() internal view {
 
-    function _calcMaticToUSDConversion() internal view {}
+    }
+
+    function _calcEthToUSDConversion() internal view {
+
+    }
 
     function _calcConversionSameRateAsset() internal view {
 
     }
 
-    function _getLatestPrice(address _asset) internal view {
+    /**
+     * @dev calculates and returns the conversion of a '_amount' of the '_inputAsset' into the '_outputAsset'
+     * The input rate and output rate will should the same number of decimals when using Chainlink
+     * However, the units of each asset will be different.  Therefore, need to multiply the amount by the output asset units
+     */
+    function _convert(uint256 _amount, address _inputAsset, address _outputAsset) internal view returns (uint256) {
+        DataTypes.SupportedAssetInfo memory inputInfo = assetToInfo[_inputAsset];
+        DataTypes.SupportedAssetInfo memory outputInfo = assetToInfo[_outputAsset];
+        
+        uint256 inputRate = _getLatestRate(inputInfo.aggregator, inputInfo.rateAsset);
+        uint256 outputRate = _getLatestRate(outputInfo.aggregator, outputInfo.rateAsset);
 
+        // Case A: Both rate assets are the same
+        if (inputInfo.rateAsset == outputInfo.rateAsset) {
+            return (_amount * inputRate * outputInfo.units) / (outputRate * inputInfo.units);
+        }
+
+        uint256 ethToUSDRate = _getLatestRate(ethToUSDAggregator, DataTypes.RateAsset.USD);
+
+        // Case B: Input asset has a rate asset of USD, Output asset has a rate asset of ETH
+        if (inputInfo.rateAsset == DataTypes.RateAsset.USD) {
+            uint256 unitAdjustedAmount = (_amount * outputInfo.units) / inputInfo.units;
+            return (unitAdjustedAmount * inputRate * CHAINLINK_DECIMALS) / (outputRate * ethToUSDRate);
+        }
+        // Case C: Input asset has a rate of ETH, Output asset has a rate asset of USD
+        else {
+            uint256 unitAdjustedAmount = (_amount * outputInfo.units) / inputInfo.units;
+            return (unitAdjustedAmount * inputRate * ethToUSDRate) / (outputRate * CHAINLINK_DECIMALS);
+        }
+    }
+
+    function _getLatestRate(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) internal view returns (uint256) {
+        (, int256 _answer, , uint256 _updatedAt, ) = AggregatorV3Interface(_aggregator).latestRoundData();
+        _validateRate(_answer, _updatedAt, _rateAsset);
+        return uint256(_answer);
     }
 
     function _validateAggregator(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) internal view {
         (, int256 _answer, , uint256 _updatedAt, ) = AggregatorV3Interface(_aggregator).latestRoundData();
 
-        if (!(_answer > 0)) revert Errors.InvalidAggregatorRate();
-
-        _validateStagnantRate(_updatedAt, _rateAsset);
+        _validateRate(_answer, _updatedAt, _rateAsset);
     }
 
     // Unsure if I should split this into three different internal functions
-    function _validateStagnantRate(uint256 _updatedAt, DataTypes.RateAsset _rateAsset) internal view {
+    function _validateRate(int256 _answer, uint256 _updatedAt, DataTypes.RateAsset _rateAsset) internal view {
+        if (!(_answer > 0)) revert Errors.InvalidAggregatorRate();
+
         if(_rateAsset == DataTypes.RateAsset.USD) {
             if( (block.timestamp - _updatedAt) > STALE_USD_PRICE_LIMIT) revert Errors.StaleUSDRate();
         }

@@ -22,7 +22,7 @@ abstract contract Fork is Helper, Test {
     AggregatorV3Interface ETH_TO_USD_PRICE_FEED;
     AggregatorV3Interface MATIC_TO_USD_PRICE_FEED;
     AggregatorV3Interface USDC_TO_USD_PRICE_FEED;
-    AggregatorV3Interface USDT_TO_USD_PRICE_FEED; 
+    AggregatorV3Interface USDT_TO_USD_PRICE_FEED;
 
     function setUp() public virtual {
         vm.createSelectFork(POLYGON_RPC_URL, POLYGON_FORK_BLOCK);

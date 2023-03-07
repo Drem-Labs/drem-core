@@ -12,6 +12,7 @@ import {Events} from "../src/finance/libraries/Events.sol";
 import {Fork} from "./reference/Fork.sol";
 import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
 import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
+import {MockAggregator} from "./reference/MockAggregator.sol";
 import {PriceAggregator} from "../src/finance/price-aggregator/PriceAggregator.sol";
 
 contract PriceAggregatorHarness is PriceAggregator {
@@ -158,7 +159,7 @@ contract Internal is PriceAggregatorHelper {
         PriceAggregatorHelper.setUp();
     }
 
-    function test_ValidateUSDRate() public {
+    function test_ValidateUSDRate() public view {
         uint256 _validUpdate = block.timestamp - priceAggregatorHarness.STALE_USD_PRICE_LIMIT();
 
         DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.USD;
@@ -174,7 +175,7 @@ contract Internal is PriceAggregatorHelper {
         priceAggregatorHarness.validateStagnantRate(_invalidUpdate, _rateAsset);
     }
 
-    function test_ValidateETHRate() public {
+    function test_ValidateETHRate() public view {
         uint256 _validUpdate = block.timestamp - priceAggregatorHarness.STALE_ETH_PRICE_LIMIT();
 
         DataTypes.RateAsset _rateAsset = DataTypes.RateAsset.ETH;
@@ -190,7 +191,14 @@ contract Internal is PriceAggregatorHelper {
         priceAggregatorHarness.validateStagnantRate(_invalidUpdate, _rateAsset);
     }
 
-    function test_ValidateStagnantRate_RevertIf_InvalidAggregatorRate() public {
+    function test_ValidateAggregator() public view {
+        priceAggregatorHarness.validateAggregator(AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+    }
 
+    function test_ValidateAggregator_RevertIf_InvalidAnswer() public {
+        AggregatorV3Interface _mockAggregator = AggregatorV3Interface(new MockAggregator());
+
+        vm.expectRevert(Errors.InvalidAggregatorRate.selector);
+        priceAggregatorHarness.validateAggregator(_mockAggregator, DataTypes.RateAsset.USD);
     }
 } 

@@ -25,6 +25,10 @@ contract PriceAggregatorHarness is PriceAggregator {
     function validateRate(int256 _answer, uint256 _updatedAt, DataTypes.RateAsset _rateAsset) external view {
         _validateRate(_answer, _updatedAt, _rateAsset);
     }
+
+    function convert(uint256 _amount, address _inputAsset, address _outputAsset) external view returns (uint256) {
+        return _convert(_amount, _inputAsset, _outputAsset);
+    }
 }
 /**
  * Fork inherits Helper
@@ -203,10 +207,60 @@ contract Internal is PriceAggregatorHelper {
     function test_ValidateAggregator() public view {
         priceAggregatorHarness.validateAggregator(AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
     }
+} 
 
-    function test_Convert_SameRateAsset() public {}
+contract Fuzz is PriceAggregatorHelper {
+    function setUp() public virtual override {
+        PriceAggregatorHelper.setUp();
+    }
+    /**
+     * @dev Input Asset: AAVE
+     * Output Asset: WMATIC
+     * Both have 18 decimals...
+     */
+    function test_Convert_BothUSDRateAsset_AaveToMatic(uint256 _inputAmount) public {
+        _inputAmount = bound(_inputAmount, 10**4, 10**40);
+        
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
-    function test_Convert_InputUSD_OutputETH() public {}
+        uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+        assertGt(outputAmount, 0);
+        
+        (, int256 aaveToUSDRate, , ,) = AAVE_TO_USD_PRICE_FEED.latestRoundData();
+        (, int256 maticToUSDRate, , ,) = MATIC_TO_USD_PRICE_FEED.latestRoundData();
+
+        uint256 aaveUnits = 10**ERC20(AAVE_ADDRESS).decimals();
+        uint256 maticUnits = 10**ERC20(WMATIC_ADDRESS).decimals();
+        
+        uint256 impliedOutputAmount = (_inputAmount * uint256(aaveToUSDRate) * (maticUnits)) / (uint256(maticToUSDRate) * aaveUnits);
+        assertEq(outputAmount, impliedOutputAmount);
+    }
+    function test_Convert_BothETHRateAsset_AaveToMatic(uint256 _inputAmount) public {
+        _inputAmount = bound(_inputAmount, 10**4, 10**40);
+        
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+
+        uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+        assertGt(outputAmount, 0);
+        
+        (, int256 aaveToETHRate, , ,) = AAVE_TO_ETH_PRICE_FEED.latestRoundData();
+        (, int256 maticToETHRate, , ,) = MATIC_TO_ETH_PRICE_FEED.latestRoundData();
+
+        uint256 aaveUnits = 10**ERC20(AAVE_ADDRESS).decimals();
+        uint256 maticUnits = 10**ERC20(WMATIC_ADDRESS).decimals();
+        
+        uint256 impliedOutputAmount = (_inputAmount * uint256(aaveToETHRate) * (maticUnits)) / (uint256(maticToETHRate) * aaveUnits);
+        assertEq(outputAmount, impliedOutputAmount);
+    }
+
+    function test_Convert_InputRateUSD_OutputRateETH() public {
+
+
+        (, int256 _ethToUSDRate, , ,) = ETH_TO_USD_PRICE_FEED.latestRoundData(); 
+    }
 
     function test_Convert_InputETH_OutputUSD() public {}
-} 
+
+}

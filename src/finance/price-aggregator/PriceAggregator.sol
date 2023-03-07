@@ -137,15 +137,29 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
         uint256 ethToUSDRate = _getLatestRate(ethToUSDAggregator, DataTypes.RateAsset.USD);
 
+        // Note: The arithmetic for cases B and C are split into two calculations to account for overflow
+
+        // Note: Rounding errors can occurs for cases B and C
+        // If the output units are small, such as 10^6, too small of an input may produce a rounding error
+        // For example, take the overflow adjusted amount for Case B:
+            // uint256 overflowAdjustment = (_amount * inputRate * outputInfo.units) / inputInfo.units;
+        // Chainlink decimals = 10^8.  Assume the following:
+        // - The inputRate is 10^8
+        // - The output units are 10^6
+        // - The input units are 10^18
+        // Any value for amount below 10^4 will produce a rounding error
+
+        // These edgecases will be extremely rare considering that 10^4 of the input token will be a very small dollar amount
+
         // Case B: Input asset has a rate asset of USD, Output asset has a rate asset of ETH
         if (inputInfo.rateAsset == DataTypes.RateAsset.USD) {
-            uint256 unitAdjustedAmount = (_amount * outputInfo.units) / inputInfo.units;
-            return (unitAdjustedAmount * inputRate * CHAINLINK_DECIMALS) / (outputRate * ethToUSDRate);
+            uint256 overflowAdjustment = (_amount * inputRate * outputInfo.units) / inputInfo.units;
+            return (overflowAdjustment * CHAINLINK_DECIMALS) / (outputRate * ethToUSDRate);
         }
         // Case C: Input asset has a rate of ETH, Output asset has a rate asset of USD
         else {
-            uint256 unitAdjustedAmount = (_amount * outputInfo.units) / inputInfo.units;
-            return (unitAdjustedAmount * inputRate * ethToUSDRate) / (outputRate * CHAINLINK_DECIMALS);
+            uint256 overflowAdjustment = (_amount * inputRate * outputInfo.units) / inputInfo.units;
+            return (overflowAdjustment * ethToUSDRate) / (outputRate * CHAINLINK_DECIMALS);
         }
     }
 

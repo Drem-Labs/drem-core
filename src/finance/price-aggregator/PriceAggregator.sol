@@ -104,7 +104,7 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     function _calcMaticToUSDConversion() internal view {}
 
-    function _calcConversion() internal view {
+    function _calcConversionSameRateAsset() internal view {
 
     }
 

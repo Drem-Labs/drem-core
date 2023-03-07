@@ -9,15 +9,20 @@ interface IVault is IERC20Upgradeable {
 
     error InvalidNumberOfSteps();
     error InvalidStepsLength();
+    error InvalidAccessor();
     error StepsAndArgsNotSameLength();
     error StepNotWhitelisted();
+    error CallFailed();
 
     // steps and assets
     function getSteps() external view returns (DataTypes.StepInfo[] memory);
 
     // share accounting
-    function mintShares(uint256 shareAmount) external;
-    function burnShares(uint256 shareAmount) external;
+    function mintShares(address to, uint256 shareAmount) external;
+    function burnShares(address to, uint256 shareAmount) external;
+
+    // executing transactions (for steps to access)
+    function execute(address to, bytes calldata data) external returns(bytes memory);
 
     // safegaurding funds
     function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] calldata expectations) external;

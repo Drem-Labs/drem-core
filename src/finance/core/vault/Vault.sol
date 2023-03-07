@@ -4,6 +4,7 @@ pragma solidity =0.8.17;
 import {IVault} from "../../interfaces/IVault.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
 import {DremERC20} from "../../base/DremERC20.sol";
+import {IDremHub} from "../../interfaces/IDremHub.sol";
 import {Errors} from "../../libraries/Errors.sol";
 import {StateAware} from "../../base/StateAware.sol";
 
@@ -23,6 +24,13 @@ contract Vault is IVault, DremERC20  {
 
     constructor(address _dremHub) DremERC20(_dremHub){}
 
+    // modifier to check if the hub allows interaction from a particular contract
+    modifier onlyHubAllowed() {
+        // check the hub to see if the sender is an allowed contract
+        if (!DREM_HUB.allowedContracts(msg.sender)) revert InvalidAccessor();
+        _;
+    }
+
     /**
      * @param _name Name of the vault
      * @param _symbol Symbol for the ERC20
@@ -40,12 +48,25 @@ contract Vault is IVault, DremERC20  {
         _addSteps(_steps);
     }
 
-    function mintShares(uint256 _shareAmount) external {
-        // Execute steps...
+    function mintShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
+        // call the internal mint function to send shares to the designated address
+        _mint(_to, _shareAmount);
+
     }
 
-    function burnShares(uint256 _shareAmount) external {
-        // Need certain withdrawl steps...
+    function burnShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
+        // call the internal burn frunction to burn the shares of the disignated address
+        _burn(_to, _shareAmount);
+    }
+
+    // need to be able to call an execute function from steps
+    // this is really for interacting with other contracts, not this one and it's ERC20 attributes
+    function execute(address _to, bytes calldata data) external onlyHubAllowed returns(bytes memory) {
+        (bool success, bytes memory returnBytes) = _to.call(data);
+
+        if (!success) revert CallFailed();
+
+        return(returnBytes);
     }
 
     // Deposits and withdrawls may need to be moved to the controller depending on whether or not migrations are possible

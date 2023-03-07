@@ -6,11 +6,11 @@ interface IStep {
     error NotHubOwner();
 
     // initialize the step (unknown amount of bytes --> must be decoded)
-    function init(bytes calldata encodedArgs) external;
+    function init(uint256 argIndex, bytes calldata fixedArgs) external;
 
     // wind and unwind the step to move forwards and backwards
     // there should really not be
-    function wind(bytes calldata encodedArgs) external;
-    function unwind(bytes calldata encodedArgs) external;
+    function wind(uint256 argIndex, bytes memory variableArgs) external;
+    function unwind(uint256 argIndex, bytes memory variableArgs) external;
 }
 

@@ -25,9 +25,9 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     // 'Heartbeats' for Chainlink's Polygon USD Aggregators are 30 seconds
     // 'Heartbeats' for Chainlink's Polygon ETH Aggregators are 24 hours
-    // Reference: 
-    //  - https://docs.chain.link/data-feeds#check-the-timestamp-of-the-latest-answer 
-    //  - https://data.chain.link/polygon/mainnet/crypto-usd 
+    // Reference:
+    //  - https://docs.chain.link/data-feeds#check-the-timestamp-of-the-latest-answer
+    //  - https://data.chain.link/polygon/mainnet/crypto-usd
     uint256 public constant STALE_USD_PRICE_LIMIT = 30;
     uint256 public constant STALE_ETH_PRICE_LIMIT = 24 hours;
 
@@ -38,17 +38,17 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     mapping(address => DataTypes.SupportedAssetInfo) private assetToInfo;
     AggregatorV3Interface private maticToUSDAggregator;
-    AggregatorV3Interface private ethToUSDAggregator; 
+    AggregatorV3Interface private ethToUSDAggregator;
 
     function setMaticToUSDAggregator(AggregatorV3Interface _maticToUSDAggregator) external onlyHubOwner {
-        if (address(_maticToUSDAggregator) == address(0)) revert Errors.ZeroAddress(); 
+        if (address(_maticToUSDAggregator) == address(0)) revert Errors.ZeroAddress();
 
         maticToUSDAggregator = _maticToUSDAggregator;
         emit Events.MaticToUSDAggregatorSet(_maticToUSDAggregator);
     }
 
     function setEthToUSDAggregator(AggregatorV3Interface _ethToUSDAggregator) external onlyHubOwner {
-        if (address(_ethToUSDAggregator) == address(0)) revert Errors.ZeroAddress(); 
+        if (address(_ethToUSDAggregator) == address(0)) revert Errors.ZeroAddress();
 
         ethToUSDAggregator = _ethToUSDAggregator;
         emit Events.EthToUSDAggregatorSet(_ethToUSDAggregator);
@@ -70,6 +70,7 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     /**
      * PROBLEM: CANT HAVE BOTH ETH AND USD AGGREGATOR FOR ASSETS under current implementation
+     * really trivial. just use weth
      */
 
     function removeSupportedAsset(address _asset) external onlyHubOwner {
@@ -108,10 +109,10 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     }
 
-    function _getLatestPrice(address _asset) internal view {    
+    function _getLatestPrice(address _asset) internal view {
 
     }
-    
+
     // Unsure if I should split this into three different internal functions
     function _validateStagnantRate(uint256 _updatedAt, DataTypes.RateAsset _rateAsset) internal view {
         if(_rateAsset == DataTypes.RateAsset.USD) {

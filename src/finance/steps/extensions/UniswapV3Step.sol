@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-import {IStep} from "..//IStep.sol";
+import {BaseStep} from "../BaseStep.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
 
 /**
@@ -11,19 +11,14 @@ import {DataTypes} from "../../libraries/DataTypes.sol";
  * Action 3: Remove Liquidity
  */
 
-contract UniswapV3StepAdapter is IStep {
 
-    function init(bytes calldata) external {}
+// abstract for now, as this is not a full contract
+abstract contract UniswapV3StepAdapter is BaseStep {
+    function init(uint256 _argIndex, bytes calldata _fixedArgs) external {}
 
-    function wind(bytes calldata _encodedArgs) external {
-        // (uint256 actionId, bytes memory actionArgs) = abi.decode(_actionData, (uint256, bytes));
-        (uint256 actionId, bytes memory args) = abi.decode(_encodedArgs, (uint256, bytes));
+    function wind(uint256 _argIndex, bytes memory _variableArgs) external {}
 
-    }
-
-    function unwind(bytes calldata) external {
-
-    }
+    function unwind(uint256 _argIndex, bytes memory _variableArgs) external {}
 
     function _swap() internal {}
 

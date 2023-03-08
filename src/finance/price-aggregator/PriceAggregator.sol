@@ -35,7 +35,6 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     address private constant WMATIC = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
 
     mapping(address => DataTypes.SupportedAssetInfo) private assetToInfo;
-    AggregatorV3Interface private maticToUSDAggregator;
     AggregatorV3Interface private ethToUSDAggregator;
 
     constructor (address _dremHub, address _ethToUSDAggregator) HubOwnable(_dremHub) {
@@ -43,10 +42,10 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         ethToUSDAggregator = AggregatorV3Interface(_ethToUSDAggregator); 
     }
 
-    /////////////
-    /// Admin ///
-    /////////////
-    
+    ////////////////////
+    ///     Admin    ///
+    ////////////////////
+
     function setEthToUSDAggregator(AggregatorV3Interface _ethToUSDAggregator) external onlyHubOwner {
         if (address(_ethToUSDAggregator) == address(0)) revert Errors.ZeroAddress();
         _validateAggregator(_ethToUSDAggregator, DataTypes.RateAsset.USD);
@@ -85,6 +84,9 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         emit Events.SupportedAssetRemoved(_asset, _info.aggregator, _info.rateAsset);
     }
 
+    /////////////////////////////
+    ///     View Functions    ///
+    /////////////////////////////
 
     function convertAsset(uint256 _inputAmount, address _inputAsset, address _outputAsset) external view returns(uint256) {
         uint256 conversion = _convert(_inputAmount, _inputAsset, _outputAsset);
@@ -94,10 +96,6 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     function getEthToUSDAggregator() external view returns (AggregatorV3Interface) {
         return ethToUSDAggregator;
-    }
-
-    function getMaticToUSDAggregator() external view returns (AggregatorV3Interface) {
-        return maticToUSDAggregator;
     }
 
     function getSupportedAssetInfo(address _asset) external view returns (DataTypes.SupportedAssetInfo memory) {

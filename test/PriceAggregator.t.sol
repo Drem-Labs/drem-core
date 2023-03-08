@@ -213,7 +213,7 @@ contract Fuzz is PriceAggregatorHelper {
      * Both have 18 decimals...
      */
     function test_Convert_BothUSDRateAsset(uint256 _inputAmount) public {
-        _inputAmount = bound(_inputAmount, 10**4, 10**40);
+        _inputAmount = bound(_inputAmount, 1e4, 1e40);
         
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
         priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
@@ -231,7 +231,7 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
     function test_Convert_BothETHRateAsset(uint256 _inputAmount) public {
-        _inputAmount = bound(_inputAmount, 10**4, 10**40);
+        _inputAmount = bound(_inputAmount, 1e4, 1e40);
         
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
         priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
@@ -249,17 +249,14 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
 
-    function test_Convert_InputRateUSD_OutputRateETH() public {
-        // _inputAmount = bound(_inputAmount, 10**4, 10**40);
-        uint256 _inputAmount = 100* (10**18);
-        console.log(_inputAmount);
+    function test_Convert_InputRateUSD_OutputRateETH(uint256 _inputAmount) public {
+        _inputAmount = bound(_inputAmount, 1e4, 1e40);
         
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
         priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
 
         uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
         assertGt(outputAmount, 0);
-        console.log(outputAmount);
         
         (, int256 aaveToUSDRate, , ,) = AAVE_TO_USD_PRICE_FEED.latestRoundData();
         (, int256 maticToETHRate, , ,) = MATIC_TO_ETH_PRICE_FEED.latestRoundData(); 
@@ -273,6 +270,75 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
 
-    function test_Convert_InputETH_OutputUSD() public {}
+    function test_Convert_InputETH_OutputUSD(uint256 _inputAmount) public {
+        _inputAmount = bound(_inputAmount, 1e4, 1e40);
+
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+        assertGt(outputAmount, 0);
+        console.log(outputAmount);
+        
+        (, int256 aaveToETHRate, , ,) = AAVE_TO_ETH_PRICE_FEED.latestRoundData();
+        (, int256 maticToUSDRate, , ,) = MATIC_TO_USD_PRICE_FEED.latestRoundData(); 
+        (, int256 ethToUSDRate, , ,) = ETH_TO_USD_PRICE_FEED.latestRoundData(); 
+        
+        uint256 aaveUnits = 10**(ERC20(AAVE_ADDRESS).decimals());
+        uint256 maticUnits = 10**(ERC20(WMATIC_ADDRESS).decimals());
+
+        uint256 overflowAdjustment = (_inputAmount * uint256(aaveToETHRate) * maticUnits) / aaveUnits;
+        uint256 impliedOutputAmount = (overflowAdjustment * uint256(ethToUSDRate)) / (uint256(maticToUSDRate) * CHAINLINK_ETH_UNITS);
+
+        assertEq(outputAmount, impliedOutputAmount);
+    }
+
+    function test_AllInputAndOutputCombos(uint256 _inputAmount) public {
+        _inputAmount = bound(_inputAmount, 1e4, 1e40);
+
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        uint256 bothUSDRateConversion = priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+
+        uint256 bothETHRateConversion = priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+
+        uint256 usdRateToEthRateConversion = priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS); 
+
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        uint256 ethRateToUsdRateConversion = priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);  
+
+        // Assert that the conversions are within 0.5% of each other
+        assertApproxEqRel(bothUSDRateConversion, bothETHRateConversion, 5e15, "Both ETH Rate off");
+        assertApproxEqRel(bothUSDRateConversion, usdRateToEthRateConversion, 5e15, "USD to ETH Rate off");
+        assertApproxEqRel(bothUSDRateConversion, ethRateToUsdRateConversion, 5e15, "ETH to USD Rate off");
+    }
+
+    function test_ConvertAsset() public {
+        uint256 _inputAmount = 100 * 1e18;
+               
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS); 
+    }
+    
+    function test_ConvertAsset_RevertIf_InputValueTooSmall() public {
+        uint256 _inputAmount = 1e3;
+
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        vm.expectRevert(Errors.InvalidConversion.selector);
+        priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, USDC_ADDRESS);
+    }
 
 }

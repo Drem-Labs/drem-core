@@ -16,7 +16,7 @@ import {MockAggregator} from "./reference/MockAggregator.sol";
 import {PriceAggregator} from "../src/finance/price-aggregator/PriceAggregator.sol";
 
 contract PriceAggregatorHarness is PriceAggregator {
-    constructor(address _dremHub) PriceAggregator(_dremHub) {}
+    constructor(address _dremHub, address _ethToUSDAggregator) PriceAggregator(_dremHub, _ethToUSDAggregator) {}
 
     function validateAggregator(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) external view {
         _validateAggregator(_aggregator, _rateAsset);
@@ -44,8 +44,8 @@ contract PriceAggregatorHelper is Fork {
         dremHubImplementation = address(new DremHub());
         dremHub = DremHub(address(new ERC1967Proxy(dremHubImplementation, new bytes(0))));
         dremHub.init();
-        priceAggregator = new PriceAggregator(address(dremHub));
-        priceAggregatorHarness = new PriceAggregatorHarness(address(dremHub));
+        priceAggregator = new PriceAggregator(address(dremHub), address(ETH_TO_USD_PRICE_FEED));
+        priceAggregatorHarness = new PriceAggregatorHarness(address(dremHub), address(ETH_TO_USD_PRICE_FEED));
     }
 }
 
@@ -116,27 +116,6 @@ contract Admin is PriceAggregatorHelper {
         priceAggregator.removeSupportedAsset(address(0));
     } 
 
-    function test_SetMaticToUSDAggregator() public {
-        vm.expectEmit(true, true, true, true);
-        emit Events.MaticToUSDAggregatorSet(MATIC_TO_USD_PRICE_FEED);
-        priceAggregator.setMaticToUSDAggregator(MATIC_TO_USD_PRICE_FEED);
-
-    }
-
-    function test_SetMaticToUSDAggregator_RevertIf_NotHubOwner() public {
-        vm.startPrank(address(0x67));
-        
-        vm.expectRevert(Errors.NotHubOwner.selector);
-        priceAggregator.setMaticToUSDAggregator(MATIC_TO_USD_PRICE_FEED);
-
-        vm.stopPrank(); 
-    }
-
-    function test_SetMaticToUSDAggregator_RevertIf_AggregatorIsZeroAddress() public {
-        vm.expectRevert(Errors.ZeroAddress.selector);
-        priceAggregator.setMaticToUSDAggregator(AggregatorV3Interface(address(0)));
-    }
-
     function test_SetEthToUSDAggregator() public {
         vm.expectEmit(true, true, true, true);
         emit Events.EthToUSDAggregatorSet(ETH_TO_USD_PRICE_FEED);
@@ -155,6 +134,21 @@ contract Admin is PriceAggregatorHelper {
     function test_SetEthToUSDAggregator_RevertIf_AggregatorIsZeroAddress() public {
         vm.expectRevert(Errors.ZeroAddress.selector);
         priceAggregator.setEthToUSDAggregator(AggregatorV3Interface(address(0)));
+    } 
+
+    function test_SetEthToUSDAggregator_InvalidRate() public {
+        MockAggregator _mockAggregator = new MockAggregator();
+        vm.expectRevert(Errors.InvalidAggregatorRate.selector);
+        priceAggregator.setEthToUSDAggregator(_mockAggregator);
+    }
+
+    function test_SetEthToUSDAggregator_StalePrice() public {
+        MockAggregator _mockAggregator = new MockAggregator();
+        skip(priceAggregator.STALE_USD_PRICE_LIMIT() + 1);
+        _mockAggregator.setAnswer(1);
+
+        vm.expectRevert(Errors.StaleUSDRate.selector);
+        priceAggregator.setEthToUSDAggregator(_mockAggregator);
     }  
 } 
 
@@ -218,7 +212,7 @@ contract Fuzz is PriceAggregatorHelper {
      * Output Asset: WMATIC
      * Both have 18 decimals...
      */
-    function test_Convert_BothUSDRateAsset_AaveToMatic(uint256 _inputAmount) public {
+    function test_Convert_BothUSDRateAsset(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 10**4, 10**40);
         
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
@@ -236,7 +230,7 @@ contract Fuzz is PriceAggregatorHelper {
         uint256 impliedOutputAmount = (_inputAmount * uint256(aaveToUSDRate) * (maticUnits)) / (uint256(maticToUSDRate) * aaveUnits);
         assertEq(outputAmount, impliedOutputAmount);
     }
-    function test_Convert_BothETHRateAsset_AaveToMatic(uint256 _inputAmount) public {
+    function test_Convert_BothETHRateAsset(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 10**4, 10**40);
         
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
@@ -256,9 +250,27 @@ contract Fuzz is PriceAggregatorHelper {
     }
 
     function test_Convert_InputRateUSD_OutputRateETH() public {
+        // _inputAmount = bound(_inputAmount, 10**4, 10**40);
+        uint256 _inputAmount = 100* (10**18);
+        console.log(_inputAmount);
+        
+        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
 
+        uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+        assertGt(outputAmount, 0);
+        console.log(outputAmount);
+        
+        (, int256 aaveToUSDRate, , ,) = AAVE_TO_USD_PRICE_FEED.latestRoundData();
+        (, int256 maticToETHRate, , ,) = MATIC_TO_ETH_PRICE_FEED.latestRoundData(); 
+        (, int256 ethToUSDRate, , ,) = ETH_TO_USD_PRICE_FEED.latestRoundData(); 
+        
+        uint256 aaveUnits = 10**(ERC20(AAVE_ADDRESS).decimals());
+        uint256 maticUnits = 10**(ERC20(WMATIC_ADDRESS).decimals());
 
-        (, int256 _ethToUSDRate, , ,) = ETH_TO_USD_PRICE_FEED.latestRoundData(); 
+        uint256 overflowAdjustment = (_inputAmount * uint256(aaveToUSDRate) * maticUnits) / aaveUnits;
+        uint256 impliedOutputAmount = (overflowAdjustment * CHAINLINK_ETH_UNITS) / (uint256(maticToETHRate) * uint256(ethToUSDRate));
+        assertEq(outputAmount, impliedOutputAmount);
     }
 
     function test_Convert_InputETH_OutputUSD() public {}

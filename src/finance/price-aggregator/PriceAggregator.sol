@@ -20,8 +20,8 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
  */
 
  contract PriceAggregator is IPriceAggregator, HubOwnable {
-
-    uint256 private constant CHAINLINK_DECIMALS = 8;
+    // Reference: https://polygonscan.com/address/0x327e23A4855b6F663a28c5161541d69Af8973302#readContract#F8 
+    uint256 private constant CHAINLINK_ETH_UNITS = 1e18;
 
     // 'Heartbeats' for Chainlink's Polygon USD Aggregators are 30 seconds
     // 'Heartbeats' for Chainlink's Polygon ETH Aggregators are 24 hours
@@ -34,22 +34,22 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     // Reference: https://polygonscan.com/address/0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270
     address private constant WMATIC = 0x0d500B1d8E8eF31E21C99d1Db9A6444d3ADf1270;
 
-    constructor (address _dremHub) HubOwnable(_dremHub) {}
-
     mapping(address => DataTypes.SupportedAssetInfo) private assetToInfo;
     AggregatorV3Interface private maticToUSDAggregator;
     AggregatorV3Interface private ethToUSDAggregator;
 
-    function setMaticToUSDAggregator(AggregatorV3Interface _maticToUSDAggregator) external onlyHubOwner {
-        if (address(_maticToUSDAggregator) == address(0)) revert Errors.ZeroAddress();
-
-        maticToUSDAggregator = _maticToUSDAggregator;
-        emit Events.MaticToUSDAggregatorSet(_maticToUSDAggregator);
+    constructor (address _dremHub, address _ethToUSDAggregator) HubOwnable(_dremHub) {
+        _validateAggregator(AggregatorV3Interface(_ethToUSDAggregator), DataTypes.RateAsset.USD);
+        ethToUSDAggregator = AggregatorV3Interface(_ethToUSDAggregator); 
     }
 
+    /////////////
+    /// Admin ///
+    /////////////
+    
     function setEthToUSDAggregator(AggregatorV3Interface _ethToUSDAggregator) external onlyHubOwner {
         if (address(_ethToUSDAggregator) == address(0)) revert Errors.ZeroAddress();
-
+        _validateAggregator(_ethToUSDAggregator, DataTypes.RateAsset.USD);
         ethToUSDAggregator = _ethToUSDAggregator;
         emit Events.EthToUSDAggregatorSet(_ethToUSDAggregator);
     }
@@ -86,8 +86,10 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     }
 
 
-    function getAssetPrice(address denominationAsset, address outputAsset) external view returns(uint256) {
-
+    function convertAsset(uint256 _inputAmount, address _inputAsset, address _outputAsset) external view returns(uint256) {
+        uint256 conversion = _convert(_inputAmount, _inputAsset, _outputAsset);
+        if (conversion == 0) revert Errors.InvalidConversion();
+        return conversion;
     }
 
     function getEthToUSDAggregator() external view returns (AggregatorV3Interface) {
@@ -104,18 +106,6 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     function isAssetSupported(address _asset) external view returns(bool) {
         return address(assetToInfo[_asset].aggregator) != address(0);
-    }
-
-    function _calcUSDtoEthConversion() internal view {
-
-    }
-
-    function _calcEthToUSDConversion() internal view {
-
-    }
-
-    function _calcConversionSameRateAsset() internal view {
-
     }
 
     /**
@@ -154,12 +144,12 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         // Case B: Input asset has a rate asset of USD, Output asset has a rate asset of ETH
         if (inputInfo.rateAsset == DataTypes.RateAsset.USD) {
             uint256 overflowAdjustment = (_amount * inputRate * outputInfo.units) / inputInfo.units;
-            return (overflowAdjustment * CHAINLINK_DECIMALS) / (outputRate * ethToUSDRate);
+            return (overflowAdjustment * CHAINLINK_ETH_UNITS) / (outputRate * ethToUSDRate);
         }
         // Case C: Input asset has a rate of ETH, Output asset has a rate asset of USD
         else {
             uint256 overflowAdjustment = (_amount * inputRate * outputInfo.units) / inputInfo.units;
-            return (overflowAdjustment * ethToUSDRate) / (outputRate * CHAINLINK_DECIMALS);
+            return (overflowAdjustment * ethToUSDRate) / (outputRate * CHAINLINK_ETH_UNITS);
         }
     }
 
@@ -171,7 +161,6 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
     function _validateAggregator(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) internal view {
         (, int256 _answer, , uint256 _updatedAt, ) = AggregatorV3Interface(_aggregator).latestRoundData();
-
         _validateRate(_answer, _updatedAt, _rateAsset);
     }
 

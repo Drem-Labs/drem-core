@@ -78,6 +78,7 @@ error StepsAndArgsNotSameLength();
 ////////////////////////////
 
 error InvalidAggregatorRate();
+error InvalidConversion();
 error StaleUSDRate();
 error StaleEthRate();
 

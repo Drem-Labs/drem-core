@@ -18,7 +18,7 @@ abstract contract Fork is Helper, Test {
      * Chainlink
      */
 
-    uint256 constant CHAINLINK_DECIMALS = 8;
+    uint256 constant CHAINLINK_ETH_UNITS = 1e18;
 
     /**
      * Polygon aggregator contracts

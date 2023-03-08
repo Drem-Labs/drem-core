@@ -21,9 +21,11 @@ contract VaultDeployer is StateAware, UUPSUpgradeable {
     }
 
     function init() external initializer {
-        vaultImplementation = new Vault(DREM_HUB);
+        vaultImplementation = new Vault(address(DREM_HUB));
     }
 
     function createVault() external {}
+
+    function _authorizeUpgrade(address newImplementation) internal virtual override onlyHubOwner {}
 
 }

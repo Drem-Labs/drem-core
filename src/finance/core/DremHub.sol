@@ -18,6 +18,10 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
 
+    // I don't like this...  
+    // If anyone gets control of the multisig, they can just take control of every vault shares and funds
+    // Should do access control just based on whitelisted steps
+
     // mapping for allowed steps/contracts to modify vault shares and funds
     mapping(address => bool) public allowedContracts;
 
@@ -31,7 +35,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      * variables without shifting down storage in the inheritance chain.
      * See https://docs.openzeppelin.com/contracts/4.x/upgradeable#storage_gaps
      */
-    uint256[49] private __gap;
+    uint256[48] private __gap;
 
     modifier onlyVaultDeployer() {
         _onlyVaultDeployer();

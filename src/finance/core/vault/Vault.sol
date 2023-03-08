@@ -22,7 +22,9 @@ contract Vault is IVault, DremERC20  {
     DataTypes.StepInfo[] private steps;
     bytes[] private fixedEncodedArgsPerStep;
 
-    constructor(address _dremHub) DremERC20(_dremHub){}
+    constructor(address _dremHub) DremERC20(_dremHub){
+        _disableInitializers();
+    }
 
     // modifier to check if the hub allows interaction from a particular contract
     modifier onlyHubAllowed() {

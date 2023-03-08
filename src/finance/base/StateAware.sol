@@ -2,15 +2,13 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-import {IDremHub} from "../interfaces/IDremHub.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
-import {HubAware} from "./HubAware.sol";
+import {Errors} from "../libraries/Errors.sol";
+import {HubOwnable} from "./HubOwnable.sol";
+import {IDremHub} from "../interfaces/IDremHub.sol";
 
-error ProtocolPausedOrFrozen();
-error ProtocolFrozen();
-
-abstract contract StateAware is HubAware {
-    constructor(address _dremHub) HubAware(_dremHub) {}
+abstract contract StateAware is HubOwnable {
+    constructor(address _dremHub) HubOwnable(_dremHub) {}
 
     modifier pausable() {
         _validateNotPausedOrFrozen();
@@ -23,10 +21,10 @@ abstract contract StateAware is HubAware {
     }
 
     function _validateNotPausedOrFrozen() internal view {
-        if (DREM_HUB.getProtocolState() > DataTypes.ProtocolState.Unpaused) revert ProtocolPausedOrFrozen();
+        if (DREM_HUB.getProtocolState() > DataTypes.ProtocolState.Unpaused) revert Errors.ProtocolPausedOrFrozen();
     }
 
     function _validateNotFrozen() internal view {
-        if (DREM_HUB.getProtocolState() == DataTypes.ProtocolState.Frozen) revert ProtocolFrozen(); 
+        if (DREM_HUB.getProtocolState() == DataTypes.ProtocolState.Frozen) revert Errors.ProtocolFrozen(); 
     }
 }

@@ -73,6 +73,16 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         return (returnBytes);
     }
 
+    // execute steps forward, needs to verify the sender
+    function windSteps() external nonReentrant {
+
+    }
+
+    // execute steps backwards, needs to verify the sender
+    function unwindSteps() external nonReentrant {
+
+    }
+
     function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] calldata expectations) external {}
 
     function getSteps() external view returns (DataTypes.StepInfo[] memory) {

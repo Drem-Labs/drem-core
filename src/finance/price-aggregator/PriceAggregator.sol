@@ -46,6 +46,10 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     ///     Admin    ///
     ////////////////////
 
+    /**
+     * @dev Sets the ETH to USD Price Feed
+     * @param _ethToUSDAggregator the new value for the ETH to USD price feed
+     */
     function setEthToUSDAggregator(AggregatorV3Interface _ethToUSDAggregator) external onlyHubOwner {
         if (address(_ethToUSDAggregator) == address(0)) revert Errors.ZeroAddress();
         _validateAggregator(_ethToUSDAggregator, DataTypes.RateAsset.USD);
@@ -53,6 +57,12 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         emit Events.EthToUSDAggregatorSet(_ethToUSDAggregator);
     }
 
+    /**
+     * @dev Adds a supported asset
+     * @param _asset the asset to add
+     * @param _aggregator the asset's price aggregator
+     * @param _rateAsset the rate asset to use
+     */
     function addSupportedAsset(address _asset, AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) external onlyHubOwner {
         if(_asset == address(0) || address(_aggregator) == address(0)) revert Errors.ZeroAddress();
 
@@ -70,8 +80,8 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     }
 
     /**
-     * PROBLEM: CANT HAVE BOTH ETH AND USD AGGREGATOR FOR ASSETS under current implementation
-     * Should always use USDC... Faster heartbeat...
+     * @dev Removes a supported asset
+     * @param _asset the asset to remove
      */
 
     function removeSupportedAsset(address _asset) external onlyHubOwner {
@@ -87,23 +97,42 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     /////////////////////////////
     ///     View Functions    ///
     /////////////////////////////
-
+    /**
+     * @notice Converts an amount of an input asset into an output asset
+     * @param _inputAmount the amount of the input asset to convert
+     * @param _inputAsset the input asset
+     * @param _outputAsset the output asset
+     * @return the output amount
+     */
     function convertAsset(uint256 _inputAmount, address _inputAsset, address _outputAsset) external view returns(uint256) {
         uint256 conversion = _convert(_inputAmount, _inputAsset, _outputAsset);
         if (conversion == 0) revert Errors.InvalidConversion();
         return conversion;
     }
 
+    /**
+     * @notice returns whether or not an asset is supported
+     * @return bool
+     */
+    function isAssetSupported(address _asset) external view returns(bool) {
+        return address(assetToInfo[_asset].aggregator) != address(0);
+    }
+    
+    /**
+     * @notice gets the ETH to USD price aggregator
+     * @return the ETH to USD price aggregator 
+     */
     function getEthToUSDAggregator() external view returns (AggregatorV3Interface) {
         return ethToUSDAggregator;
     }
 
+    /**
+     * @notice gets the supported asset's info
+     * @param _asset the asset to get the info for
+     * @return the supported asset info
+     */
     function getSupportedAssetInfo(address _asset) external view returns (DataTypes.SupportedAssetInfo memory) {
         return assetToInfo[_asset];
-    }
-
-    function isAssetSupported(address _asset) external view returns(bool) {
-        return address(assetToInfo[_asset].aggregator) != address(0);
     }
 
     /**

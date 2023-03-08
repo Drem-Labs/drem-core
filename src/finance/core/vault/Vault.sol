@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-import {ReentrancyGuard} "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IVault} from "../../interfaces/IVault.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
 import {DremERC20} from "../../base/DremERC20.sol";

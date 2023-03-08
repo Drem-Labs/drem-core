@@ -5,6 +5,8 @@ library TransferLib {
     // errors
     error InvalidDenominationAsset();
     error InsufficientFunds();
+    error InsufficientShares();
+    error TransferFailed();
 
     // events
     event SharesIssued(uint256 shares, uint256 price);
@@ -30,7 +32,7 @@ library TransferLib {
 
     // struct for splitting funds into fees and purchasing power
     struct Distribution {
-        uint256 purchase;
-        uint256 fee;
+        uint256 funds;
+        uint256 fees;
     }
 }

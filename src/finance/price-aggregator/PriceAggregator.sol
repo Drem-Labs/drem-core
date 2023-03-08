@@ -110,6 +110,8 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
         return conversion;
     }
 
+    function convertStepPositionPrice() external view {}
+
     /**
      * @notice returns whether or not an asset is supported
      * @return bool
@@ -117,7 +119,7 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
     function isAssetSupported(address _asset) external view returns(bool) {
         return address(assetToInfo[_asset].aggregator) != address(0);
     }
-    
+
     /**
      * @notice gets the ETH to USD price aggregator
      * @return the ETH to USD price aggregator 

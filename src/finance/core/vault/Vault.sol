@@ -14,7 +14,6 @@ import {StateAware} from "../../base/StateAware.sol";
  */
 
 contract Vault is IVault, DremERC20  {
-    // Need to make this ERC20 Upgradeable...
     // DREM_HUB is an immutable variable.  It is stored in runtime code
     // Therefore, accessible by proxies
 

@@ -120,6 +120,8 @@ contract Admin is PriceAggregatorHelper {
         vm.expectEmit(true, true, true, true);
         emit Events.EthToUSDAggregatorSet(ETH_TO_USD_PRICE_FEED);
         priceAggregator.setEthToUSDAggregator(ETH_TO_USD_PRICE_FEED);
+
+        assertEq(address(priceAggregator.getEthToUSDAggregator()), address(ETH_TO_USD_PRICE_FEED));
     }
 
     function test_SetEthToUSDAggregator_RevertIf_NotHubOwner() public {
@@ -136,13 +138,13 @@ contract Admin is PriceAggregatorHelper {
         priceAggregator.setEthToUSDAggregator(AggregatorV3Interface(address(0)));
     } 
 
-    function test_SetEthToUSDAggregator_InvalidRate() public {
+    function test_SetEthToUSDAggregator_RevertIf_InvalidRate() public {
         MockAggregator _mockAggregator = new MockAggregator();
         vm.expectRevert(Errors.InvalidAggregatorRate.selector);
         priceAggregator.setEthToUSDAggregator(_mockAggregator);
     }
 
-    function test_SetEthToUSDAggregator_StalePrice() public {
+    function test_SetEthToUSDAggregator_RevertIf_StalePrice() public {
         MockAggregator _mockAggregator = new MockAggregator();
         skip(priceAggregator.STALE_USD_PRICE_LIMIT() + 1);
         _mockAggregator.setAnswer(1);

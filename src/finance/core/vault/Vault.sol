@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
+import {ReentrancyGuard} "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IVault} from "../../interfaces/IVault.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
 import {DremERC20} from "../../base/DremERC20.sol";
@@ -13,7 +14,7 @@ import {StateAware} from "../../base/StateAware.sol";
  *   1. steps[] and stepsEncodedArgs[] must always be the same length
  */
 
-contract Vault is IVault, DremERC20 {
+contract Vault is IVault, DremERC20, ReentrancyGuard {
     // DREM_HUB is an immutable variable.  It is stored in runtime code
     // Therefore, accessible by proxies
 
@@ -72,15 +73,7 @@ contract Vault is IVault, DremERC20 {
         return (returnBytes);
     }
 
-    // Deposits and withdrawls may need to be moved to the controller depending on whether or not migrations are possible
-
-    function deposit() external {}
-
-    function depositFor() external {}
-
     function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] calldata expectations) external {}
-
-    function withdrawFor() external {}
 
     function getSteps() external view returns (DataTypes.StepInfo[] memory) {
         return steps;

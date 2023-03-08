@@ -13,6 +13,7 @@ import {Vault} from "../src/finance/core/vault/Vault.sol";
 
 contract VaultHarness is Vault {
     constructor(address dremHub) Vault(dremHub) {}
+
     function addSteps(DataTypes.StepInfo[] calldata _steps) external {
         Vault._addSteps(_steps);
     }
@@ -41,7 +42,7 @@ contract VaultHelper is Test, Helper {
 contract ExternalFunctions is VaultHelper {
     function setUp() public override {
         VaultHelper.setUp();
-    }   
+    }
 
     function test_Init_Disabled() public {
         // vault.init();
@@ -61,19 +62,16 @@ contract InternalFunctions is VaultHelper {
     DataTypes.StepInfo[] steps;
 
     function setUp() public override {
-       VaultHelper.setUp();
-       vaultHarness = new VaultHarness(address(dremHub));
+        VaultHelper.setUp();
+        vaultHarness = new VaultHarness(address(dremHub));
     }
 
     function test_addSteps() public {
-        
         for (uint256 i; i < 5; ++i) {
             address _erc20 = address(new ERC20("", ""));
 
-            DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-                interactionAddress: _erc20,
-                functionSelector: ERC20.transfer.selector
-            });
+            DataTypes.StepInfo memory _step =
+                DataTypes.StepInfo({interactionAddress: _erc20, functionSelector: ERC20.transfer.selector});
             bytes memory _encodedArgs = ANY_CALL;
 
             dremHub.addWhitelistedStep(_step, _encodedArgs);
@@ -83,26 +81,24 @@ contract InternalFunctions is VaultHelper {
 
         vaultHarness.addSteps(steps);
 
-        DataTypes.StepInfo[] memory queriedSteps = vaultHarness.getSteps(); 
+        DataTypes.StepInfo[] memory queriedSteps = vaultHarness.getSteps();
 
-        assertEq(queriedSteps.length, steps.length);        
+        assertEq(queriedSteps.length, steps.length);
 
-        for(uint256 i; i < queriedSteps.length; ++i) {
+        for (uint256 i; i < queriedSteps.length; ++i) {
             assertEq(steps[i].functionSelector, queriedSteps[i].functionSelector);
             assertEq(steps[i].interactionAddress, queriedSteps[i].interactionAddress);
         }
     }
 
     function test_validateStep() public {
-       address _erc20 = address(new ERC20("", ""));
+        address _erc20 = address(new ERC20("", ""));
 
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: _erc20,
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: _erc20, functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = ANY_CALL;
 
-        dremHub.addWhitelistedStep(_step, _encodedArgs); 
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
 
         vaultHarness.validateStep(_step, _encodedArgs);
     }

@@ -1,4 +1,3 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
@@ -25,6 +24,6 @@ abstract contract StateAware is HubOwnable {
     }
 
     function _validateNotFrozen() internal view {
-        if (DREM_HUB.getProtocolState() == DataTypes.ProtocolState.Frozen) revert Errors.ProtocolFrozen(); 
+        if (DREM_HUB.getProtocolState() == DataTypes.ProtocolState.Frozen) revert Errors.ProtocolFrozen();
     }
 }

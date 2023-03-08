@@ -5,7 +5,6 @@ import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3
 import {DataTypes} from "./DataTypes.sol";
 
 library Events {
-
     /////////////////////////////
     //     Drem Hub Events     //
     /////////////////////////////
@@ -29,21 +28,21 @@ library Events {
     event WhitelistedStepRemoved(address interactionAddress, bytes4 functionSelector, bytes encodedArgs);
 
     /**
-     * 
+     *
      */
     event FundDeployerSet();
 
     /**
-     * @dev Emitted when protocol state is set 
-     * 
+     * @dev Emitted when protocol state is set
+     *
      * @param _state the new protocol state
      */
     event ProtocolStateSet(DataTypes.ProtocolState _state);
 
     /**
-     * @dev Emitted when global trading is set 
+     * @dev Emitted when global trading is set
      *
-     * @param setting the new setting 
+     * @param setting the new setting
      */
     event GlobalTradingSet(bool setting);
 
@@ -60,9 +59,8 @@ library Events {
      */
     event SupportedAssetAdded(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
 
-     /**
-      * 
-      */
+    /**
+     *
+     */
     event SupportedAssetRemoved(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
-
 }

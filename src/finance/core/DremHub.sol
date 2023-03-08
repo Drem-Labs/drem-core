@@ -18,7 +18,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
 
-    // I don't like this...  
+    // I don't like this...
     // If anyone gets control of the multisig, they can just take control of every vault shares and funds
     // Should do access control just based on whitelisted steps
 
@@ -59,7 +59,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
 
     // Unpaused: Anything is possible!
     // Paused: No new trades can be opened; deposits and withdrawls possible; vault shares transfers turned on
-    // Frozen: Nothing is possible except withdrawls; 
+    // Frozen: Nothing is possible except withdrawls;
     function setProtocolState(DataTypes.ProtocolState _state) external onlyOwner {
         protocolState = _state;
         emit Events.ProtocolStateSet(_state);

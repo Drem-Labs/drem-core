@@ -28,7 +28,9 @@ contract TransferStep is BaseStep {
     address feeController;
 
     // constructor --> set the GAValuer
-    constructor(address _dremHub, address _GAValuer, TransferLib.FeeData memory _fees, address _feeCollector) BaseStep(_dremHub) {
+    constructor(address _dremHub, address _GAValuer, TransferLib.FeeData memory _fees, address _feeCollector)
+        BaseStep(_dremHub)
+    {
         _setGAValuer(_GAValuer);
         _setFees(_fees);
         _setFeeCollector(_feeCollector);
@@ -57,7 +59,6 @@ contract TransferStep is BaseStep {
         // split the funds and fees
         TransferLib.Distribution memory fundSplit = _splitFunds(argData.funds);
 
-
         // get the value of the vault --> going to be in some safe denomination asset --> can use this as a true value to calculate shares
         uint256 vaultValue = IGAValuer(GAValuer).getVaultValue(msg.sender, fixedData.denominationAsset);
 
@@ -68,7 +69,9 @@ contract TransferStep is BaseStep {
         // if there are no shares, leave the shares alone
         if (vaultSharesOutstanding > 0) {
             // revert if shares price is less than reality
-            if ((fundSplit.purchase / argData.shares) < (vaultValue / vaultSharesOutstanding)) revert TransferLib.InsufficientFunds();
+            if ((fundSplit.purchase / argData.shares) < (vaultValue / vaultSharesOutstanding)) {
+                revert TransferLib.InsufficientFunds();
+            }
 
             // if not reverted, set the number of shares to the max that the funds will buy
             // keeping the ratio here and multiplying first maximizes accuracy and minimizes rounding in the case of small vault values
@@ -107,7 +110,6 @@ contract TransferStep is BaseStep {
         // push the funds from the vault to the user (should be done in generalist function)
 
         // transfer fees (should be done in generalist function)
-
     }
 
     // set allowed denomination assets (must be very liquid, not just tracked)
@@ -136,7 +138,7 @@ contract TransferStep is BaseStep {
     }
 
     // get the funds split
-    function _splitFunds(uint256 _funds) internal returns(TransferLib.Distribution memory) {
+    function _splitFunds(uint256 _funds) internal returns (TransferLib.Distribution memory) {
         // allocate some memory to the distribution
         TransferLib.Distribution memory fundSplit;
 
@@ -147,7 +149,7 @@ contract TransferStep is BaseStep {
         fundSplit.purchase = _funds - fundSplit.fee;
 
         // return this information back to the caller
-        return(fundSplit);
+        return (fundSplit);
     }
 
     // set the valuer (internal)

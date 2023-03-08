@@ -13,4 +13,3 @@ interface IStep {
     function wind(uint256 argIndex, bytes memory variableArgs) external;
     function unwind(uint256 argIndex, bytes memory variableArgs) external;
 }
-

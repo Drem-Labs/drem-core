@@ -6,7 +6,6 @@ import {StateAware} from "../base/StateAware.sol";
 import {Vault} from "./vault/Vault.sol";
 
 contract VaultDeployer is StateAware, UUPSUpgradeable {
-
     Vault vaultImplementation;
 
     /**
@@ -27,5 +26,4 @@ contract VaultDeployer is StateAware, UUPSUpgradeable {
     function createVault() external {}
 
     function _authorizeUpgrade(address newImplementation) internal virtual override onlyHubOwner {}
-
 }

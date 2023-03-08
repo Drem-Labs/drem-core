@@ -5,11 +5,10 @@ import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3
 
 // To Do: Order alphabetically
 library DataTypes {
-    
     /**
      * Global data types
      */
-    
+
     // basic step routing information
     struct StepInfo {
         address interactionAddress;
@@ -50,7 +49,7 @@ library DataTypes {
     /**
      *  Price aggregator data types
      */
-    enum RateAsset{
+    enum RateAsset {
         USD,
         ETH
     }
@@ -58,6 +57,6 @@ library DataTypes {
     struct SupportedAssetInfo {
         AggregatorV3Interface aggregator;
         RateAsset rateAsset;
-        uint256 units; 
+        uint256 units;
     }
 }

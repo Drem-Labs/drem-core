@@ -5,7 +5,7 @@ import {Errors} from "../libraries/Errors.sol";
 import {HubAware} from "./HubAware.sol";
 
 abstract contract HubOwnable is HubAware {
-    constructor(address _dremHub) HubAware(_dremHub){}
+    constructor(address _dremHub) HubAware(_dremHub) {}
 
     modifier onlyHubOwner() {
         _validateMsgSenderHubOwner();
@@ -15,5 +15,4 @@ abstract contract HubOwnable is HubAware {
     function _validateMsgSenderHubOwner() internal view {
         if (msg.sender != DREM_HUB.owner()) revert Errors.NotHubOwner();
     }
-    
 }

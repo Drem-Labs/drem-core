@@ -5,12 +5,11 @@ import {BaseStep} from "../BaseStep.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
 
 /**
- * Step actions include: 
+ * Step actions include:
  * Action 1: Swap
  * Action 2: Add Liquidity
  * Action 3: Remove Liquidity
  */
-
 
 // abstract for now, as this is not a full contract
 abstract contract UniswapV3StepAdapter is BaseStep {

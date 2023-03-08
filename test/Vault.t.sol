@@ -12,8 +12,8 @@ import {IVault} from "../src/finance/interfaces/IVault.sol";
 import {Vault} from "../src/finance/core/vault/Vault.sol";
 
 contract VaultHarness is Vault {
-
     constructor(address dremHub) Vault(dremHub) {}
+
     function addSteps(DataTypes.StepInfo[] calldata _steps) external {
         Vault._addSteps(_steps);
     }
@@ -29,34 +29,49 @@ contract VaultHarness is Vault {
 
 contract VaultHelper is Test, Helper {
     DremHub dremHub;
+    Vault vaultImplementation;
 
     function setUp() public virtual {
         address dremHubImplementation = address(new DremHub());
         dremHub = DremHub(address(new ERC1967Proxy(dremHubImplementation, new bytes(0))));
         dremHub.init();
+        vaultImplementation = new Vault(address(dremHub));
     }
 }
 
-contract ExternalFunctions is VaultHelper {}
+contract ExternalFunctions is VaultHelper {
+    function setUp() public override {
+        VaultHelper.setUp();
+    }
+
+    function test_Init_Disabled() public {
+        // vault.init();
+    }
+
+    function test_InitDisabled_Implementation() public {
+        DataTypes.StepInfo[] memory _emptyStepInfo;
+        bytes[] memory _emptyBytesArray;
+
+        vm.expectRevert("Initializable: contract is already initialized");
+        vaultImplementation.init(address(0), "", "", _emptyStepInfo, _emptyBytesArray);
+    }
+}
 
 contract InternalFunctions is VaultHelper {
     VaultHarness vaultHarness;
     DataTypes.StepInfo[] steps;
 
     function setUp() public override {
-       VaultHelper.setUp();
-       vaultHarness = new VaultHarness(address(dremHub));
+        VaultHelper.setUp();
+        vaultHarness = new VaultHarness(address(dremHub));
     }
 
     function test_addSteps() public {
-        
         for (uint256 i; i < 5; ++i) {
             address _erc20 = address(new ERC20("", ""));
 
-            DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-                interactionAddress: _erc20,
-                functionSelector: ERC20.transfer.selector
-            });
+            DataTypes.StepInfo memory _step =
+                DataTypes.StepInfo({interactionAddress: _erc20, functionSelector: ERC20.transfer.selector});
             bytes memory _encodedArgs = ANY_CALL;
 
             dremHub.addWhitelistedStep(_step, _encodedArgs);
@@ -66,26 +81,24 @@ contract InternalFunctions is VaultHelper {
 
         vaultHarness.addSteps(steps);
 
-        DataTypes.StepInfo[] memory queriedSteps = vaultHarness.getSteps(); 
+        DataTypes.StepInfo[] memory queriedSteps = vaultHarness.getSteps();
 
-        assertEq(queriedSteps.length, steps.length);        
+        assertEq(queriedSteps.length, steps.length);
 
-        for(uint256 i; i < queriedSteps.length; ++i) {
+        for (uint256 i; i < queriedSteps.length; ++i) {
             assertEq(steps[i].functionSelector, queriedSteps[i].functionSelector);
             assertEq(steps[i].interactionAddress, queriedSteps[i].interactionAddress);
         }
     }
 
     function test_validateStep() public {
-       address _erc20 = address(new ERC20("", ""));
+        address _erc20 = address(new ERC20("", ""));
 
-        DataTypes.StepInfo memory _step = DataTypes.StepInfo({
-            interactionAddress: _erc20,
-            functionSelector: ERC20.transfer.selector
-        });
+        DataTypes.StepInfo memory _step =
+            DataTypes.StepInfo({interactionAddress: _erc20, functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = ANY_CALL;
 
-        dremHub.addWhitelistedStep(_step, _encodedArgs); 
+        dremHub.addWhitelistedStep(_step, _encodedArgs);
 
         vaultHarness.validateStep(_step, _encodedArgs);
     }

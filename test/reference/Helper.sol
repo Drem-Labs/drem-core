@@ -9,6 +9,12 @@ abstract contract Helper {
     bytes32 constant ANY_CALL_HASH = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
 
     /**
+     * Price Aggregator
+     */
+    // uint256 constant STALE_USD_PRICE_LIMIT = 30;
+    // uint256 constant STALE_ETH_PRICE_LIMIT = 24 hours;
+
+    /**
      * Token addresses
      */
     address constant AAVE_ADDRESS = 0xD6DF932A45C0f255f85145f286eA0b292B21C90B;

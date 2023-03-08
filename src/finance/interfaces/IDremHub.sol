@@ -35,7 +35,7 @@ interface IDremHub {
      */
     error TradingDisabled();
 
-    function allowedContracts(address) external returns(bool);
+    function allowedContracts(address) external returns (bool);
 
     function addWhitelistedStep(DataTypes.StepInfo calldata, bytes calldata) external;
 

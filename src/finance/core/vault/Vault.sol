@@ -13,16 +13,18 @@ import {StateAware} from "../../base/StateAware.sol";
  *   1. steps[] and stepsEncodedArgs[] must always be the same length
  */
 
-contract Vault is IVault, DremERC20  {
-    // Need to make this ERC20 Upgradeable...
+contract Vault is IVault, DremERC20 {
     // DREM_HUB is an immutable variable.  It is stored in runtime code
     // Therefore, accessible by proxies
 
     uint256 constant MAX_STEPS = 10;
 
     DataTypes.StepInfo[] private steps;
+    bytes[] private fixedEncodedArgsPerStep;
 
-    constructor(address _dremHub) DremERC20(_dremHub){}
+    constructor(address _dremHub) DremERC20(_dremHub) {
+        _disableInitializers();
+    }
 
     // modifier to check if the hub allows interaction from a particular contract
     modifier onlyHubAllowed() {
@@ -35,13 +37,15 @@ contract Vault is IVault, DremERC20  {
      * @param _name Name of the vault
      * @param _symbol Symbol for the ERC20
      */
-     // init should not emit an event -- Fund deployer should
-    function init( 
+    // init should not emit an event -- Fund deployer should
+    // each steps need fixed encoded data and variable encoded data
+    function init(
         address caller,
         string calldata _name,
         string calldata _symbol,
         DataTypes.StepInfo[] calldata _steps,
-        bytes[] calldata _encodedArgsPerStep ) external initializer {
+        bytes[] calldata _encodedArgsPerStep
+    ) external initializer {
         if (_steps.length != _encodedArgsPerStep.length) revert Errors.StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
         _validateSteps(_steps, _encodedArgsPerStep);
@@ -51,7 +55,6 @@ contract Vault is IVault, DremERC20  {
     function mintShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
         // call the internal mint function to send shares to the designated address
         _mint(_to, _shareAmount);
-
     }
 
     function burnShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
@@ -61,12 +64,12 @@ contract Vault is IVault, DremERC20  {
 
     // need to be able to call an execute function from steps
     // this is really for interacting with other contracts, not this one and it's ERC20 attributes
-    function execute(address _to, bytes calldata data) external onlyHubAllowed returns(bytes memory) {
+    function execute(address _to, bytes calldata data) external onlyHubAllowed returns (bytes memory) {
         (bool success, bytes memory returnBytes) = _to.call(data);
 
         if (!success) revert CallFailed();
 
-        return(returnBytes);
+        return (returnBytes);
     }
 
     // Deposits and withdrawls may need to be moved to the controller depending on whether or not migrations are possible
@@ -77,30 +80,33 @@ contract Vault is IVault, DremERC20  {
 
     function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] calldata expectations) external {}
 
-    function withdrawFor() external{}
+    function withdrawFor() external {}
 
     function getSteps() external view returns (DataTypes.StepInfo[] memory) {
         return steps;
     }
 
     function _validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) internal view {
-        
-        if(_steps.length > MAX_STEPS || _steps.length == 0) revert Errors.InvalidNumberOfSteps();
+        if (_steps.length > MAX_STEPS || _steps.length == 0) revert Errors.InvalidNumberOfSteps();
 
-        for (uint256 i; i < _steps.length; ){
+        for (uint256 i; i < _steps.length;) {
             _validateStep(_steps[i], _encodedArgsPerStep[i]);
-            unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
     }
 
-    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArgs) internal view{
-        if(!(DREM_HUB.isStepWhitelisted(_step, _encodedArgs))) revert Errors.StepNotWhitelisted();
+    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArgs) internal view {
+        if (!(DREM_HUB.isStepWhitelisted(_step, _encodedArgs))) revert Errors.StepNotWhitelisted();
     }
 
     function _addSteps(DataTypes.StepInfo[] calldata _steps) internal {
-        for (uint256 i; i < _steps.length; ) {
+        for (uint256 i; i < _steps.length;) {
             steps.push(_steps[i]);
-            unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
     }
 

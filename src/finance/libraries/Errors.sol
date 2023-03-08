@@ -2,82 +2,82 @@
 pragma solidity =0.8.17;
 
 library Errors {
+    /////////////////////////
+    ///   Global Errors   ///
+    /////////////////////////
 
-/////////////////////////
-///   Global Errors   ///
-/////////////////////////
+    /**
+     *  Non-whitelisted step cannot be removed
+     */
+    error StepNotWhitelisted();
 
-/**
-*  Non-whitelisted step cannot be removed
-*/
-error StepNotWhitelisted();
+    /**
+     *  Input is address(0)
+     */
+    error ZeroAddress();
 
-/**
-*  Input is address(0)
-*/
-error ZeroAddress();
+    ////////////
+    /// Base ///
+    ////////////
 
-////////////
-/// Base ///
-////////////
+    /**
+     * Msg sender is not hub owner
+     */
+    error NotHubOwner();
 
-/**
-* Msg sender is not hub owner
-*/
-error NotHubOwner();
+    /**
+     * Protocol is paused or frozen
+     */
+    error ProtocolPausedOrFrozen();
 
-/**
-* Protocol is paused or frozen
-*/
-error ProtocolPausedOrFrozen();
+    /**
+     * Protocol is frozen
+     */
+    error ProtocolFrozen();
 
-/**
-* Protocol is frozen 
-*/
-error ProtocolFrozen();
+    //////////////////
+    ///  Drem Hub  ///
+    //////////////////
 
-//////////////////
-///  Drem Hub  ///
-//////////////////
+    /**
+     *  Invalid step parameters passed in
+     */
+    error InvalidParam();
 
-/**
-*  Invalid step parameters passed in
-*/
-error InvalidParam();
+    /**
+     *  Step was not passed in with encoded args
+     */
+    error InvalidStep();
 
-/**
-*  Step was not passed in with encoded args
-*/
-error InvalidStep();
+    /**
+     * Passed in Vault Deployer address is not a contract
+     */
+    error InvalidVaultDeployerAddress();
 
-/**
-* Passed in Vault Deployer address is not a contract
-*/
-error InvalidVaultDeployerAddress();
+    /**
+     *  Step is already whitelisted
+     */
+    error StepAlreadyWhitelisted();
 
-/**
-*  Step is already whitelisted
-*/
-error StepAlreadyWhitelisted();
+    /**
+     *  'isTradingnAllowed' is set to false
+     */
+    error TradingDisabled();
 
-/**
-*  'isTradingnAllowed' is set to false
-*/
-error TradingDisabled();
+    /////////////////
+    ///   Vault   ///
+    /////////////////
 
-/////////////////
-///   Vault   ///
-/////////////////
+    error InvalidNumberOfSteps();
+    error InvalidStepsLength();
+    error StepsAndArgsNotSameLength();
 
-error InvalidNumberOfSteps();
-error InvalidStepsLength();
-error StepsAndArgsNotSameLength();
+    ////////////////////////////
+    ///   Price Aggregator   ///
+    ////////////////////////////
 
-////////////////////////////
-///   Price Aggregator   ///
-////////////////////////////
-
-error StaleUSDPrice();
-error StaleEthPrice();
-
+    error InvalidAggregatorRate();
+    error InvalidConversion();
+    error StaleUSDRate();
+    error StaleEthRate();
 }

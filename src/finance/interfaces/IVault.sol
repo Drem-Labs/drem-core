@@ -6,7 +6,6 @@ import {IERC20Upgradeable} from "@openzeppelin-upgradeable/contracts/token/ERC20
 import {DataTypes} from "../libraries/DataTypes.sol";
 
 interface IVault is IERC20Upgradeable {
-
     error InvalidNumberOfSteps();
     error InvalidStepsLength();
     error InvalidAccessor();
@@ -22,7 +21,7 @@ interface IVault is IERC20Upgradeable {
     function burnShares(address to, uint256 shareAmount) external;
 
     // executing transactions (for steps to access)
-    function execute(address to, bytes calldata data) external returns(bytes memory);
+    function execute(address to, bytes calldata data) external returns (bytes memory);
 
     // safegaurding funds
     function withdraw(uint256 shareAmount, DataTypes.AssetExpectation[] calldata expectations) external;

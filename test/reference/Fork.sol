@@ -11,27 +11,37 @@ abstract contract Fork is Helper, Test {
      */
     uint256 polygonForkId;
     string POLYGON_RPC_URL = vm.envString("POLYGON_RPC_URL");
-    uint256 constant POLYGON_FORK_BLOCK = 39784975;
+    uint256 constant POLYGON_FORK_BLOCK = 40078927;
+
+    /**
+     * Chainlink
+     */
+
+    uint256 constant CHAINLINK_ETH_UNITS = 1e18;
 
     /**
      * Polygon aggregator contracts
-     * Reference: https://docs.chain.link/data-feeds/price-feeds/addresses/?network=polygon 
+     * Reference: https://docs.chain.link/data-feeds/price-feeds/addresses/?network=polygon
      */
     AggregatorV3Interface AAVE_TO_USD_PRICE_FEED;
+    AggregatorV3Interface AAVE_TO_ETH_PRICE_FEED;
     AggregatorV3Interface DAI_TO_USD_PRICE_FEED;
     AggregatorV3Interface ETH_TO_USD_PRICE_FEED;
     AggregatorV3Interface MATIC_TO_USD_PRICE_FEED;
+    AggregatorV3Interface MATIC_TO_ETH_PRICE_FEED;
     AggregatorV3Interface USDC_TO_USD_PRICE_FEED;
-    AggregatorV3Interface USDT_TO_USD_PRICE_FEED; 
+    AggregatorV3Interface USDT_TO_USD_PRICE_FEED;
 
     function setUp() public virtual {
-        vm.createSelectFork(POLYGON_RPC_URL);
+        vm.createSelectFork(POLYGON_RPC_URL, POLYGON_FORK_BLOCK);
         AAVE_TO_USD_PRICE_FEED = AggregatorV3Interface(0x72484B12719E23115761D5DA1646945632979bB6);
+        AAVE_TO_ETH_PRICE_FEED = AggregatorV3Interface(0xbE23a3AA13038CfC28aFd0ECe4FdE379fE7fBfc4);
         DAI_TO_USD_PRICE_FEED = AggregatorV3Interface(0x4746DeC9e833A82EC7C2C1356372CcF2cfcD2F3D);
         ETH_TO_USD_PRICE_FEED = AggregatorV3Interface(0xF9680D99D6C9589e2a93a78A04A279e509205945);
         MATIC_TO_USD_PRICE_FEED = AggregatorV3Interface(0xAB594600376Ec9fD91F8e885dADF0CE036862dE0);
+        MATIC_TO_ETH_PRICE_FEED = AggregatorV3Interface(0x327e23A4855b6F663a28c5161541d69Af8973302);
         USDC_TO_USD_PRICE_FEED = AggregatorV3Interface(0xfE4A8cc5b5B2366C1B58Bea3858e81843581b2F7);
-        USDT_TO_USD_PRICE_FEED = AggregatorV3Interface(0x0A6513e40db6EB1b165753AD52E80663aeA50545); 
+        USDT_TO_USD_PRICE_FEED = AggregatorV3Interface(0x0A6513e40db6EB1b165753AD52E80663aeA50545);
     }
 
     // function getEthToUSDCPriceAndDecimals() internal view returns (int256, uint8) {

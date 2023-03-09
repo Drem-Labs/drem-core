@@ -274,6 +274,14 @@ contract External is PriceAggregatorHelper {
         vm.expectRevert(Errors.InvalidConversion.selector);
         priceAggregator.convertAssets(_inputAmounts, _inputAssets, USDC_ADDRESS);
     }
+
+    function test_InvalidInputAssetAndInputAmountLengths() public {
+        uint256[] memory _inputAmounts = new uint256[](1);
+        address[] memory _inputAssets = new address[](2); 
+
+        vm.expectRevert(Errors.InvalidInputArrays.selector);
+        priceAggregator.convertAssets(_inputAmounts, _inputAssets, USDC_ADDRESS); 
+    }
 }
 
 contract Fuzz is PriceAggregatorHelper {

@@ -82,7 +82,6 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
      * @dev Removes a supported asset
      * @param _asset the asset to remove
      */
-
     function removeSupportedAsset(address _asset) external onlyHubOwner {
         if (_asset == address(0)) revert Errors.ZeroAddress();
 

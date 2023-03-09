@@ -2,10 +2,19 @@
 pragma solidity =0.8.17;
 
 library Errors {
-
 /////////////////////////
 ///   Global Errors   ///
 /////////////////////////
+
+/**
+*  Asset is not supported (i.e. does not have an aggregator in Price Aggregator)
+*/
+error AssetNotSupported();
+
+/**
+ * Empty array
+ */
+error EmptyArray();
 
 /**
 *  Non-whitelisted step cannot be removed
@@ -31,6 +40,9 @@ error NotHubOwner();
 */
 error ProtocolPausedOrFrozen();
 
+/**
+* Protocol is frozen
+*/
 error ProtocolFrozen();
 
 /**
@@ -71,16 +83,26 @@ error TradingDisabled();
 ///   Vault   ///
 /////////////////
 
+/**
+* msg.sender is not the Drem Hub
+*/
 error MsgSenderIsNotHub();
+
+/**
+* Invalid number of steps
+*/
 error InvalidNumberOfSteps();
 error InvalidStepsLength();
+
+/**
+* Steps array and args array is not the same length
+*/
 error StepsAndArgsNotSameLength();
 
 ////////////////////////////
 ///   Price Aggregator   ///
 ////////////////////////////
 
-error AssetNotSupported();
 error InvalidAggregatorRate();
 error InvalidConversion();
 error InvalidInputArrays();

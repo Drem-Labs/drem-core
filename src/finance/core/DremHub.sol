@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 pragma solidity =0.8.17;
 
-import {Ownable2StepUpgradeable} from "@openzeppelin-upgradeable/contracts/access/Ownable2StepUpgradeable.sol";
 import {Initializable} from "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin-upgradeable/contracts/access/Ownable2StepUpgradeable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {IDremHub} from "../interfaces/IDremHub.sol";
 import {IOwnable} from "../interfaces/IOwnable.sol";
@@ -14,14 +14,13 @@ import {Events} from "../libraries/Events.sol";
 contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // keccak256('DremHub.ANY_CALL')
     bytes32 private constant ANY_CALL_HASH = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
+    
+    bool private isTradingAllowed;
+    address private vaultDeployer;
+    DataTypes.ProtocolState protocolState;
 
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
-
-    bool private isTradingAllowed;
-    address private vaultDeployer;
-
-    DataTypes.ProtocolState protocolState;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new

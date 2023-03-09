@@ -20,8 +20,9 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
 
     uint256 constant MAX_STEPS = 10;
 
-    DataTypes.StepInfo[] private steps;
-    bytes[] private fixedEncodedArgsPerStep;
+    DataTypes.StepInfo[] steps;
+    bytes[] fixedEncodedArgsPerStep;
+    address[] vaultAssets;
 
     constructor(address _dremHub) DremERC20(_dremHub) {
         _disableInitializers();
@@ -47,6 +48,7 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         DataTypes.StepInfo[] calldata _steps,
         bytes[] calldata _encodedArgsPerStep
     ) external initializer {
+        if(_steps.length == 0 || _encodedArgsPerStep.length == 0) revert Errors.EmptyArray();
         if (_steps.length != _encodedArgsPerStep.length) revert Errors.StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
         _validateSteps(_steps, _encodedArgsPerStep);

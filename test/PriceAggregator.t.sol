@@ -22,6 +22,10 @@ contract PriceAggregatorHarness is PriceAggregator {
         _validateAggregator(_aggregator, _rateAsset);
     }
 
+    function validateAsset(address _asset) external view {
+        _validateAsset(_asset);
+    }
+
     function validateRate(int256 _answer, uint256 _updatedAt, DataTypes.RateAsset _rateAsset) external view {
         _validateRate(_answer, _updatedAt, _rateAsset);
     }
@@ -204,6 +208,72 @@ contract Internal is PriceAggregatorHelper {
     function test_ValidateAggregator() public view {
         priceAggregatorHarness.validateAggregator(AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
     }
+
+    function test_ValidateAsset() public {
+        vm.expectRevert(Errors.AssetNotSupported.selector);
+        priceAggregatorHarness.validateAsset(USDC_ADDRESS);
+    }
+}
+
+contract External is PriceAggregatorHelper {
+    function setUp() public virtual override {
+        PriceAggregatorHelper.setUp();
+    }
+    function test_ConvertAssets() public {
+        address[] memory _inputAssets = new address[](4);
+        uint256[] memory _inputAmounts = new uint256[](4);
+        
+        // _inputAssets are AAVE, USDT, USDC, and ETH
+        _inputAssets[0] = AAVE_ADDRESS;
+        _inputAssets[1] = USDT_ADDRESS;
+        _inputAssets[2] = USDC_ADDRESS;
+        _inputAssets[3] = WETH_ADDRESS;
+        
+
+        // _inputs are 100 AAVE, 100 USDT, 100 USDC, and 1 ETH
+        _inputAmounts[0] = 100e18;
+        _inputAmounts[1] = 100e6;
+        _inputAmounts[2] = 100e6;
+        _inputAmounts[3] = 1e18;
+        
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(USDT_ADDRESS, USDT_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(WETH_ADDRESS, ETH_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        // Implied value is 8467.22429907
+        // Price returned by the aggregator is roughly equal to 8446
+        // Off by -0.2%...
+        
+        priceAggregator.convertAssets(_inputAmounts, _inputAssets, WMATIC_ADDRESS);
+    }
+    function test_ConvertAssets_RevertIf_InvalidOutputAsset() public {
+        address[] memory _inputAssets = new address[](1);
+        uint256[] memory _inputAmounts = new uint256[](1);
+
+        _inputAssets[0] = AAVE_ADDRESS;
+        _inputAmounts[0] = 100e18;
+        
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+ 
+        vm.expectRevert(Errors.AssetNotSupported.selector);
+        priceAggregator.convertAssets(_inputAmounts, _inputAssets, WMATIC_ADDRESS);
+    }
+
+    function test_ConvertAssets_RevertIf_InputValueTooSmall() public {
+        uint256[] memory _inputAmounts = new uint256[](1);
+        address[] memory _inputAssets = new address[](1);
+
+        _inputAmounts[0] = 1e3;
+        _inputAssets[0] = AAVE_ADDRESS;
+
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        vm.expectRevert(Errors.InvalidConversion.selector);
+        priceAggregator.convertAssets(_inputAmounts, _inputAssets, USDC_ADDRESS);
+    }
 }
 
 contract Fuzz is PriceAggregatorHelper {
@@ -216,7 +286,7 @@ contract Fuzz is PriceAggregatorHelper {
      * Both have 18 decimals...
      */
 
-    function test_Convert_BothUSDRateAsset(uint256 _inputAmount) public {
+    function testFuzz_Convert_BothUSDRateAsset(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
@@ -236,7 +306,7 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
 
-    function test_Convert_BothETHRateAsset(uint256 _inputAmount) public {
+    function testFuzz_Convert_BothETHRateAsset(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
@@ -256,7 +326,7 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
 
-    function test_Convert_InputRateUSD_OutputRateETH(uint256 _inputAmount) public {
+    function testFuzz_Convert_InputRateUSD_OutputRateETH(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
@@ -278,7 +348,7 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
 
-    function test_Convert_InputETH_OutputUSD(uint256 _inputAmount) public {
+    function testFuzz_Convert_InputETH_OutputUSD(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
@@ -302,7 +372,7 @@ contract Fuzz is PriceAggregatorHelper {
         assertEq(outputAmount, impliedOutputAmount);
     }
 
-    function test_AllInputAndOutputCombos(uint256 _inputAmount) public {
+    function testFuzz_AllInputAndOutputCombos(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
         priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
@@ -325,28 +395,46 @@ contract Fuzz is PriceAggregatorHelper {
 
         uint256 ethRateToUsdRateConversion = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
 
-        // Assert that the conversions are within 0.5% of each other
-        assertApproxEqRel(bothUSDRateConversion, bothETHRateConversion, 5e15, "Both ETH Rate off");
-        assertApproxEqRel(bothUSDRateConversion, usdRateToEthRateConversion, 5e15, "USD to ETH Rate off");
-        assertApproxEqRel(bothUSDRateConversion, ethRateToUsdRateConversion, 5e15, "ETH to USD Rate off");
+        // Assert that the conversions are within 1% of each other
+        assertApproxEqRel(bothUSDRateConversion, bothETHRateConversion, 1e16, "Both ETH Rate off");
+        assertApproxEqRel(bothUSDRateConversion, usdRateToEthRateConversion, 1e16, "USD to ETH Rate off");
+        assertApproxEqRel(bothUSDRateConversion, ethRateToUsdRateConversion, 1e16, "ETH to USD Rate off");
     }
 
-    // function test_ConvertAsset() public {
-    //     uint256 _inputAmount = 100 * 1e18;
+    function testFuzz_ConvertAssets(uint256 _inputAmount0, uint256 _inputAmount1, uint256 _inputAmount2, uint256 _inputAmount3) public {
+        address[] memory _inputAssets = new address[](4);
+        uint256[] memory _inputAmounts = new uint256[](4);
+        
+        // _inputAssets are AAVE, USDT, USDC, and ETH
+        _inputAssets[0] = AAVE_ADDRESS;
+        _inputAssets[1] = USDT_ADDRESS;
+        _inputAssets[2] = USDC_ADDRESS;
+        _inputAssets[3] = WETH_ADDRESS;
 
-    //     priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-    //     priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        // AAVE is bounded from 1e-14 to 1e22 AAVE
+        _inputAmount0 = bound(_inputAmount0, 1e4, 1e40);
 
-    //     priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
-    // }
+        // USDT is bounded from 1e-3 USDT to 1e22 USDT
+        _inputAmount1 = bound(_inputAmount1, 1e3, 1e28);
 
-    // function test_ConvertAsset_RevertIf_InputValueTooSmall() public {
-    //     uint256 _inputAmount = 1e3;
+        // USDC is bounded from 1e-3 USDC to 1e22 USDC
+        _inputAmount2 = bound(_inputAmount1, 1e3, 1e28);
 
-    //     priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-    //     priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        // WETH is bounded from 1e-14 to 1e22 ETH
+        _inputAmount3 = bound(_inputAmount0, 1e4, 1e40);
 
-    //     vm.expectRevert(Errors.InvalidConversion.selector);
-    //     priceAggregator.convertAsset(_inputAmount, AAVE_ADDRESS, USDC_ADDRESS);
-    // }
+        // _inputs are 100 AAVE, 100 USDT, 100 USDC, and 1 ETH
+        _inputAmounts[0] = _inputAmount0;
+        _inputAmounts[1] = _inputAmount1;
+        _inputAmounts[2] = _inputAmount2;
+        _inputAmounts[3] = _inputAmount3;
+        
+        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(USDT_ADDRESS, USDT_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(WETH_ADDRESS, ETH_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        
+        priceAggregator.convertAssets(_inputAmounts, _inputAssets, WMATIC_ADDRESS);
+    }
 }

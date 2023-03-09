@@ -18,13 +18,6 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
 
-    // I don't like this...
-    // If anyone gets control of the multisig, they can just take control of every vault shares and funds
-    // Should do access control just based on whitelisted steps
-
-    // mapping for allowed steps/contracts to modify vault shares and funds
-    mapping(address => bool) public allowedContracts;
-
     bool private isTradingAllowed;
     address private vaultDeployer;
 
@@ -73,10 +66,6 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     function addWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
         _setWhitelistedStep(_step, _encodedArgs, true);
         emit Events.WhitelistedStepAdded(_step.interactionAddress, _step.functionSelector, _encodedArgs);
-    }
-
-    function setContractAllowed(address _contract, bool _allowed) external onlyOwner {
-        allowedContracts[_contract] = _allowed;
     }
 
     function removeWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {

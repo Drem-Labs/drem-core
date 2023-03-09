@@ -2,82 +2,90 @@
 pragma solidity =0.8.17;
 
 library Errors {
-    /////////////////////////
-    ///   Global Errors   ///
-    /////////////////////////
 
-    /**
-     *  Non-whitelisted step cannot be removed
-     */
-    error StepNotWhitelisted();
+/////////////////////////
+///   Global Errors   ///
+/////////////////////////
 
-    /**
-     *  Input is address(0)
-     */
-    error ZeroAddress();
+/**
+*  Non-whitelisted step cannot be removed
+*/
+error StepNotWhitelisted();
 
-    ////////////
-    /// Base ///
-    ////////////
+/**
+*  Input is address(0)
+*/
+error ZeroAddress();
 
-    /**
-     * Msg sender is not hub owner
-     */
-    error NotHubOwner();
+////////////
+/// Base ///
+////////////
 
-    /**
-     * Protocol is paused or frozen
-     */
-    error ProtocolPausedOrFrozen();
+/**
+* Msg sender is not hub owner
+*/
+error NotHubOwner();
 
-    /**
-     * Protocol is frozen
-     */
-    error ProtocolFrozen();
+/**
+* Protocol is paused or frozen
+*/
+error ProtocolPausedOrFrozen();
 
-    //////////////////
-    ///  Drem Hub  ///
-    //////////////////
+error ProtocolFrozen();
 
-    /**
-     *  Invalid step parameters passed in
-     */
-    error InvalidParam();
+/**
+* Protocol is frozen 
+*
+error ProtocolFrozen();
 
-    /**
-     *  Step was not passed in with encoded args
-     */
-    error InvalidStep();
+//////////////////
+///  Drem Hub  ///
+//////////////////
 
-    /**
-     * Passed in Vault Deployer address is not a contract
-     */
-    error InvalidVaultDeployerAddress();
+/**
+*  Invalid step parameters passed in
+*/
+error InvalidParam();
 
-    /**
-     *  Step is already whitelisted
-     */
-    error StepAlreadyWhitelisted();
+/**
+*  Step was not passed in with encoded args
+*/
+error InvalidStep();
 
-    /**
-     *  'isTradingnAllowed' is set to false
-     */
-    error TradingDisabled();
+/**
+* Passed in Vault Deployer address is not a contract
+*/
+error InvalidVaultDeployerAddress();
 
-    /////////////////
-    ///   Vault   ///
-    /////////////////
+/**
+*  Step is already whitelisted
+*/
+error StepAlreadyWhitelisted();
 
-    error InvalidNumberOfSteps();
-    error InvalidStepsLength();
-    error StepsAndArgsNotSameLength();
+/**
+*  'isTradingnAllowed' is set to false
+*/
+error TradingDisabled();
 
-    ////////////////////////////
-    ///   Price Aggregator   ///
-    ////////////////////////////
+/////////////////
+///   Vault   ///
+/////////////////
 
-    error InvalidAggregatorRate();
-    error InvalidConversion();
-    error StaleUSDRate();
-    error StaleEthRate();
+error MsgSenderIsNotHub();
+error InvalidNumberOfSteps();
+error InvalidStepsLength();
+error StepsAndArgsNotSameLength();
+
+////////////////////////////
+///   Price Aggregator   ///
+////////////////////////////
+
+error AssetNotSupported();
+error InvalidAggregatorRate();
+error InvalidConversion();
+error InvalidInputArrays();
+error InvalidOutputAsset();
+error StaleUSDRate();
+error StaleEthRate();
+
 }

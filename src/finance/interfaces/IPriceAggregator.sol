@@ -15,7 +15,7 @@ interface IPriceAggregator {
     /////////////////////////////
     ///     View Functions    ///
     /////////////////////////////
-    function convertAsset(uint256, address, address) external view returns (uint256);
+    function convertAssets(uint256[] calldata, address[] calldata, address) external view returns (uint256);
     function isAssetSupported(address) external view returns (bool);
     function getEthToUSDAggregator() external view returns (AggregatorV3Interface);
     function getSupportedAssetInfo(address) external view returns (DataTypes.SupportedAssetInfo memory);

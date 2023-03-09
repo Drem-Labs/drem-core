@@ -30,7 +30,7 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     // modifier to check if the hub allows interaction from a particular contract
     modifier onlyHubAllowed() {
         // check the hub to see if the sender is an allowed contract
-        if (!DREM_HUB.allowedContracts(msg.sender)) revert InvalidAccessor();
+        if (msg.sender != address(DREM_HUB)) revert Errors.MsgSenderIsNotHub();
         _;
     }
 

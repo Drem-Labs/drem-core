@@ -9,7 +9,6 @@ import {DremHub} from "../src/finance/core/DremHub.sol";
 import {Errors} from "../src/finance/libraries/Errors.sol";
 import {Events} from "../src/finance/libraries/Events.sol";
 import {Helper} from "./reference/Helper.sol";
-import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 
 contract DremHubHelper is Test, Helper {
     DremHub dremHub;
@@ -157,7 +156,7 @@ contract Admin is DremHubHelper {
             DataTypes.StepInfo({interactionAddress: address(0), functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
 
-        vm.expectRevert(IDremHub.InvalidStep.selector);
+        vm.expectRevert(Errors.InvalidStep.selector);
         dremHub.addWhitelistedStep(_step, _encodedArgs);
     }
 

@@ -45,11 +45,6 @@ error ProtocolPausedOrFrozen();
 */
 error ProtocolFrozen();
 
-/**
-* Protocol is frozen 
-*
-error ProtocolFrozen();
-
 //////////////////
 ///  Drem Hub  ///
 //////////////////
@@ -110,4 +105,10 @@ error InvalidOutputAsset();
 error StaleUSDRate();
 error StaleEthRate();
 
+////////////////////////////
+///    Asset Registry    ///
+////////////////////////////
+
+error AssetAlreadyWhitelisted();
+error AssetNotWhitelisted();
 }

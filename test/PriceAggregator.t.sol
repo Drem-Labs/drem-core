@@ -55,19 +55,41 @@ contract PriceAggregatorHelper is Fork {
 }
 
 contract Admin is PriceAggregatorHelper {
+
+    address[] assets;
+    AggregatorV3Interface[] aggregators;
+    DataTypes.RateAsset[] rateAssets;
+
     function setUp() public virtual override {
         PriceAggregatorHelper.setUp();
+
+        assets.push(AAVE_ADDRESS);
+        assets.push(USDC_ADDRESS);
+        assets.push(WMATIC_ADDRESS);
+
+        aggregators.push(AAVE_TO_USD_PRICE_FEED);
+        aggregators.push(USDC_TO_USD_PRICE_FEED);
+        aggregators.push(MATIC_TO_USD_PRICE_FEED);
+
+        for (uint256 i; i < 3; i++) {
+            rateAssets.push(DataTypes.RateAsset.USD);
+        }
     }
 
-    function test_AddSupportedAsset() public {
-        
+
+
+    function test_AddSupportedAssets() public {
         address[] memory _assets = new address[](1);
         AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](1);
-        DataTypes.RateAsset memory _rateAssets = new DataTypes.RateAsset[](1); 
+        DataTypes.RateAsset[] memory _rateAssets = new DataTypes.RateAsset[](1); 
+
+        _assets[0] = AAVE_ADDRESS;
+        _aggregators[0] = AAVE_TO_USD_PRICE_FEED;
+        _rateAssets[0] = DataTypes.RateAsset.USD; 
 
         vm.expectEmit(true, true, true, true);
         emit Events.SupportedAssetAdded(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAssets(_assets, _aggregators, _rateAssets);
 
         DataTypes.SupportedAssetInfo memory _aaveInfo = priceAggregator.getSupportedAssetInfo(AAVE_ADDRESS);
 
@@ -79,28 +101,69 @@ contract Admin is PriceAggregatorHelper {
         assertTrue(priceAggregator.isAssetSupported(AAVE_ADDRESS));
     }
 
+    function test_AddSupportedAssets_RevertIf_EmptyArray() public {
+        address[] memory _emptyAddressArray;
+        AggregatorV3Interface[] memory _emptyAggregatorArray;
+        DataTypes.RateAsset[] memory _emptyRateAssetArray;
+
+        vm.expectRevert(Errors.EmptyArray.selector);
+        priceAggregator.addSupportedAssets(_emptyAddressArray, aggregators, rateAssets);  
+
+        vm.expectRevert(Errors.InvalidAssetArrays.selector);
+        priceAggregator.addSupportedAssets(assets, _emptyAggregatorArray, rateAssets);
+
+        vm.expectRevert(Errors.InvalidAssetArrays.selector);
+        priceAggregator.addSupportedAssets(assets, aggregators, _emptyRateAssetArray);
+    }
+
+    function test_AddSupportedAssets_RevertIf_NotEqualArrayLengths() public {
+        // Assets length == 2; aggregators length == 3; rate assets length == 3
+        assets.pop();
+
+        vm.expectRevert(Errors.InvalidAssetArrays.selector);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);  
+
+        // Assets length == 2; aggregators length == 3; rate assets length == 2
+        rateAssets.pop();
+
+        vm.expectRevert(Errors.InvalidAssetArrays.selector);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
+
+        // Assets length == 1; aggregators length == 1; rate assets length == 2
+        aggregators.pop();
+        aggregators.pop();
+        assets.pop();
+
+        vm.expectRevert(Errors.InvalidAssetArrays.selector);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
+    }
+
     function test_AddSupportedAsset_RevertIf_NotHubOwner() public {
         vm.startPrank(address(0x67));
 
         vm.expectRevert(Errors.NotHubOwner.selector);
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
 
         vm.stopPrank();
     }
 
     function test_AddSupportedAsset_RevertIf_AssetIsZeroAddress() public {
+        assets[0] = address(0);
+
         vm.expectRevert(Errors.ZeroAddress.selector);
-        priceAggregator.addSupportedAsset(address(0), AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
     }
 
     function test_AddSupportedAsset_RevertIf_AggregatorIsZeroAddress() public {
+        aggregators[0] = AggregatorV3Interface(address(0));
+
         vm.expectRevert(Errors.ZeroAddress.selector);
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AggregatorV3Interface(address(0)), DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
     }
 
     function test_RemoveSupportedAsset() public {
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.removeSupportedAsset(AAVE_ADDRESS);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
+        priceAggregator.removeSupportedAssets(assets);
 
         DataTypes.SupportedAssetInfo memory _aaveInfo = priceAggregator.getSupportedAssetInfo(AAVE_ADDRESS);
 
@@ -113,14 +176,16 @@ contract Admin is PriceAggregatorHelper {
         vm.startPrank(address(0x67));
 
         vm.expectRevert(Errors.NotHubOwner.selector);
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        priceAggregator.addSupportedAssets(assets, aggregators, rateAssets);
 
         vm.stopPrank();
     }
 
     function test_RemoveSupportedAsset_RevertIf_AssetIsZeroAddress() public {
+        assets[0] = address(0);
+        
         vm.expectRevert(Errors.ZeroAddress.selector);
-        priceAggregator.removeSupportedAsset(address(0));
+        priceAggregator.removeSupportedAssets(assets);
     }
 
     function test_SetEthToUSDAggregator() public {
@@ -237,17 +302,32 @@ contract External is PriceAggregatorHelper {
         _inputAmounts[1] = 100e6;
         _inputAmounts[2] = 100e6;
         _inputAmounts[3] = 1e18;
-        
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(USDT_ADDRESS, USDT_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(WETH_ADDRESS, ETH_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+
+        address[] memory _assets = new address[](5);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = USDC_ADDRESS;
+        _assets[2] = USDT_ADDRESS;
+        _assets[3] = WETH_ADDRESS;
+        _assets[4] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](5);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+        _aggregators[1] = USDC_TO_USD_PRICE_FEED; 
+        _aggregators[2] = USDT_TO_USD_PRICE_FEED; 
+        _aggregators[3] = ETH_TO_USD_PRICE_FEED; 
+        _aggregators[4] = MATIC_TO_USD_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](5);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+        for (uint256 i = 1; i < 5; ++i) {
+            _rateAssets[i] = DataTypes.RateAsset.USD;
+        } 
+
+        priceAggregator.addSupportedAssets(_assets, _aggregators, _rateAssets);
 
         // Implied value is 8467.22429907
         // Price returned by the aggregator is roughly equal to 8446
         // Off by -0.2%...
-        
         priceAggregator.convertAssets(_inputAmounts, _inputAssets, WMATIC_ADDRESS);
     }
     function test_ConvertAssets_RevertIf_InvalidOutputAsset() public {
@@ -256,8 +336,17 @@ contract External is PriceAggregatorHelper {
 
         _inputAssets[0] = AAVE_ADDRESS;
         _inputAmounts[0] = 100e18;
-        
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+
+        address[] memory _assets = new address[](1);
+        _assets[0] = AAVE_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](1);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](1);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;        
+         
+        priceAggregator.addSupportedAssets(_assets, _aggregators, _rateAssets);
  
         vm.expectRevert(Errors.AssetNotSupported.selector);
         priceAggregator.convertAssets(_inputAmounts, _inputAssets, WMATIC_ADDRESS);
@@ -270,8 +359,19 @@ contract External is PriceAggregatorHelper {
         _inputAmounts[0] = 1e3;
         _inputAssets[0] = AAVE_ADDRESS;
 
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        address[] memory _assets = new address[](2);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = USDC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](2);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+        _aggregators[1] = USDC_TO_USD_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](2);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+        _rateAssets[1] = DataTypes.RateAsset.USD;
+
+        priceAggregator.addSupportedAssets(_assets, _aggregators, _rateAssets);
 
         vm.expectRevert(Errors.InvalidConversion.selector);
         priceAggregator.convertAssets(_inputAmounts, _inputAssets, USDC_ADDRESS);
@@ -299,8 +399,19 @@ contract Fuzz is PriceAggregatorHelper {
     function testFuzz_Convert_BothUSDRateAsset(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        address[] memory _assets = new address[](2);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](2);
+        _aggregators[0] = AAVE_TO_USD_PRICE_FEED;
+        _aggregators[1] = MATIC_TO_USD_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](2);
+        _rateAssets[0] = DataTypes.RateAsset.USD;
+        _rateAssets[1] = DataTypes.RateAsset.USD;
+
+        priceAggregatorHarness.addSupportedAssets(_assets, _aggregators, _rateAssets);
 
         uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
         assertGt(outputAmount, 0);
@@ -319,8 +430,19 @@ contract Fuzz is PriceAggregatorHelper {
     function testFuzz_Convert_BothETHRateAsset(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        address[] memory _assets = new address[](2);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](2);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+        _aggregators[1] = MATIC_TO_ETH_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](2);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+        _rateAssets[1] = DataTypes.RateAsset.ETH;
+
+        priceAggregatorHarness.addSupportedAssets(_assets, _aggregators, _rateAssets);
 
         uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
         assertGt(outputAmount, 0);
@@ -339,8 +461,19 @@ contract Fuzz is PriceAggregatorHelper {
     function testFuzz_Convert_InputRateUSD_OutputRateETH(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        address[] memory _assets = new address[](2);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](2);
+        _aggregators[0] = AAVE_TO_USD_PRICE_FEED;
+        _aggregators[1] = MATIC_TO_ETH_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](2);
+        _rateAssets[0] = DataTypes.RateAsset.USD;
+        _rateAssets[1] = DataTypes.RateAsset.ETH;
+
+        priceAggregatorHarness.addSupportedAssets(_assets, _aggregators, _rateAssets);
 
         uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
         assertGt(outputAmount, 0);
@@ -361,8 +494,19 @@ contract Fuzz is PriceAggregatorHelper {
     function testFuzz_Convert_InputETH_OutputUSD(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        address[] memory _assets = new address[](2);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](2);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+        _aggregators[1] = MATIC_TO_USD_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](2);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+        _rateAssets[1] = DataTypes.RateAsset.USD;
+
+        priceAggregatorHarness.addSupportedAssets(_assets, _aggregators, _rateAssets); 
 
         uint256 outputAmount = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
         assertGt(outputAmount, 0);
@@ -385,23 +529,34 @@ contract Fuzz is PriceAggregatorHelper {
     function testFuzz_AllInputAndOutputCombos(uint256 _inputAmount) public {
         _inputAmount = bound(_inputAmount, 1e4, 1e40);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        address[] memory _assets = new address[](2);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](2);
+        _aggregators[0] = AAVE_TO_USD_PRICE_FEED;
+        _aggregators[1] = MATIC_TO_USD_PRICE_FEED;
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](2);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+        _rateAssets[1] = DataTypes.RateAsset.USD;
+
+        priceAggregatorHarness.addSupportedAssets(_assets, _aggregators, _rateAssets);  
 
         uint256 bothUSDRateConversion = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-
-        uint256 bothETHRateConversion = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
-
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
+        _aggregators[1] = MATIC_TO_ETH_PRICE_FEED;
+        _rateAssets[1] = DataTypes.RateAsset.ETH;
 
         uint256 usdRateToEthRateConversion = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
 
-        priceAggregatorHarness.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregatorHarness.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+
+        uint256 bothETHRateConversion = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
+
+        _aggregators[1] = MATIC_TO_USD_PRICE_FEED;
+        _rateAssets[1] = DataTypes.RateAsset.USD;
 
         uint256 ethRateToUsdRateConversion = priceAggregatorHarness.convert(_inputAmount, AAVE_ADDRESS, WMATIC_ADDRESS);
 
@@ -439,11 +594,27 @@ contract Fuzz is PriceAggregatorHelper {
         _inputAmounts[2] = _inputAmount2;
         _inputAmounts[3] = _inputAmount3;
         
-        priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_ETH_PRICE_FEED, DataTypes.RateAsset.ETH);
-        priceAggregator.addSupportedAsset(USDC_ADDRESS, USDC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(USDT_ADDRESS, USDT_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(WETH_ADDRESS, ETH_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        priceAggregator.addSupportedAsset(WMATIC_ADDRESS, MATIC_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
+        address[] memory _assets = new address[](5);
+        _assets[0] = AAVE_ADDRESS;
+        _assets[1] = USDC_ADDRESS;
+        _assets[2] = USDT_ADDRESS;
+        _assets[3] = WETH_ADDRESS;
+        _assets[4] = WMATIC_ADDRESS;
+
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](5);
+        _aggregators[0] = AAVE_TO_ETH_PRICE_FEED;
+        _aggregators[1] = USDC_TO_USD_PRICE_FEED; 
+        _aggregators[2] = USDT_TO_USD_PRICE_FEED; 
+        _aggregators[3] = ETH_TO_USD_PRICE_FEED; 
+        _aggregators[4] = MATIC_TO_USD_PRICE_FEED; 
+
+        DataTypes.RateAsset [] memory _rateAssets = new DataTypes.RateAsset[](5);
+        _rateAssets[0] = DataTypes.RateAsset.ETH;
+        for (uint256 i = 1; i < 5; ++i) {
+            _rateAssets[i] = DataTypes.RateAsset.USD;
+        } 
+
+        priceAggregator.addSupportedAssets(_assets, _aggregators, _rateAssets);
         
         priceAggregator.convertAssets(_inputAmounts, _inputAssets, WMATIC_ADDRESS);
     }

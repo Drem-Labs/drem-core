@@ -59,7 +59,7 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
     function addSupportedAssets(address[] calldata _assets, AggregatorV3Interface[] calldata _aggregators, DataTypes.RateAsset[] calldata _rateAssets) external onlyHubOwner {
         uint256 len = _assets.length;
         if (len == 0) revert Errors.EmptyArray();
-        if(len != _aggregators.length && len != _rateAssets.length) revert Errors.InvalidAssetArrays();
+        if(len != _aggregators.length || len != _rateAssets.length) revert Errors.InvalidAssetArrays();
 
         for (uint256 i; i < len; ) {
             _addSupportedAsset(_assets[i], _aggregators[i], _rateAssets[i]);
@@ -72,7 +72,7 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
         if (len == 0) revert Errors.EmptyArray();
 
         for (uint256 i; i < len;) {
-            _removeSupportedAsset(_asset);
+            _removeSupportedAsset(_assets[i]);
             unchecked{++i;}
         }
     }

@@ -13,6 +13,7 @@ import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 contract AssetRegistry is HubOwnable, UUPSUpgradeable {
     using EnumerableSet for EnumerableSet.AddressSet;
 
+    // Debatable whether should be in init function or should remain as immutable 
     IPriceAggregator private immutable PRICE_AGGREGATOR;
 
     EnumerableSet.AddressSet private whitelistedAssets;

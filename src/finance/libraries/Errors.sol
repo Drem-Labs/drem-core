@@ -100,6 +100,7 @@ error StepsAndArgsNotSameLength();
 
 error InvalidAggregatorRate();
 error InvalidConversion();
+error InvalidAssetArrays();
 error InvalidInputArrays();
 error InvalidOutputAsset();
 error StaleUSDRate();

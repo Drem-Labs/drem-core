@@ -28,7 +28,7 @@ contract AssetRegistryHelper is Fork {
 
         priceAggregator = new PriceAggregator(address(dremHub), address(ETH_TO_USD_PRICE_FEED));
 
-        assetRegistryImplementation = address(new AssetRegistry(address(dremHub), priceAggregator));
+        assetRegistryImplementation = address(new AssetRegistry(address(dremHub), address(priceAggregator)));
         assetRegistry = AssetRegistry(address(new ERC1967Proxy(assetRegistryImplementation, new bytes(0))));
     }
 

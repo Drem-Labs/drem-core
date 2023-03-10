@@ -27,21 +27,12 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
     constructor(address _dremHub, address _priceAggregator) HubOwnable(_dremHub) {
         PRICE_AGGREGATOR = IPriceAggregator(_priceAggregator);
     }
-    
-    // Don't think init function is needed
-    // function init() external initializer {
-
-    // }
 
     /**
      * @dev Admin function to whitelist assets
      * @param _assets the assets to whitelist
      */
     function whitelistAssets(address[] calldata _assets) external onlyHubOwner {
-        _whitelistAssets(_assets);
-    }
-
-    function _whitelistAssets(address[] calldata _assets) internal {
         uint256 len = _assets.length;
         
         if(len == 0) revert Errors.EmptyArray();
@@ -76,6 +67,10 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      */
     function isAssetWhitelisted(address _asset) external view returns (bool) {
         return whitelistedAssets.contains(_asset);
+    }
+
+    function getPriceAggregator() external view returns(IPriceAggregator) {
+        return PRICE_AGGREGATOR;
     }
 
     /**

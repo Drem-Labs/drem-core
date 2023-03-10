@@ -56,15 +56,35 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
         emit Events.EthToUSDAggregatorSet(_ethToUSDAggregator);
     }
 
+    function addSupportedAssets(address[] calldata _assets, AggregatorV3Interface[] calldata _aggregators, DataTypes.RateAsset[] calldata _rateAssets) external onlyHubOwner {
+        uint256 len = _assets.length;
+        if (len == 0) revert Errors.EmptyArray();
+        if(len != _aggregators.length && len != _rateAssets.length) revert Errors.InvalidAssetArrays();
+
+        for (uint256 i; i < len; ) {
+            _addSupportedAsset(_assets[i], _aggregators[i], _rateAssets[i]);
+            unchecked{++i;}
+        }
+    }
+
+    function removeSupportedAssets(address[] calldata _assets) external onlyHubOwner {
+        uint256 len = _assets.length;
+        if (len == 0) revert Errors.EmptyArray();
+
+        for (uint256 i; i < len;) {
+            _removeSupportedAsset(_asset);
+            unchecked{++i;}
+        }
+    }
+
     /**
      * @dev Adds a supported asset
      * @param _asset the asset to add
      * @param _aggregator the asset's price aggregator
      * @param _rateAsset the rate asset to use
      */
-    function addSupportedAsset(address _asset, AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset)
-        external
-        onlyHubOwner
+    function _addSupportedAsset(address _asset, AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset)
+        internal
     {
         if (_asset == address(0) || address(_aggregator) == address(0)) revert Errors.ZeroAddress();
 
@@ -82,7 +102,7 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
      * @dev Removes a supported asset
      * @param _asset the asset to remove
      */
-    function removeSupportedAsset(address _asset) external onlyHubOwner {
+    function _removeSupportedAsset(address _asset) internal {
         if (_asset == address(0)) revert Errors.ZeroAddress();
 
         DataTypes.SupportedAssetInfo memory _info = assetToInfo[_asset];

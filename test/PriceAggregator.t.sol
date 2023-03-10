@@ -60,11 +60,13 @@ contract Admin is PriceAggregatorHelper {
     }
 
     function test_AddSupportedAsset() public {
+        
+        address[] memory _assets = new address[](1);
+        AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](1);
+        DataTypes.RateAsset memory _rateAssets = new DataTypes.RateAsset[](1); 
+
         vm.expectEmit(true, true, true, true);
         emit Events.SupportedAssetAdded(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
-        console.log(block.timestamp);
-        (,,, uint256 _updatedAt,) = AAVE_TO_USD_PRICE_FEED.latestRoundData();
-        console.log(_updatedAt);
         priceAggregator.addSupportedAsset(AAVE_ADDRESS, AAVE_TO_USD_PRICE_FEED, DataTypes.RateAsset.USD);
 
         DataTypes.SupportedAssetInfo memory _aaveInfo = priceAggregator.getSupportedAssetInfo(AAVE_ADDRESS);

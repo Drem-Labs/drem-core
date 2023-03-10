@@ -2,82 +2,113 @@
 pragma solidity =0.8.17;
 
 library Errors {
-    /////////////////////////
-    ///   Global Errors   ///
-    /////////////////////////
+/////////////////////////
+///   Global Errors   ///
+/////////////////////////
 
-    /**
-     *  Non-whitelisted step cannot be removed
-     */
-    error StepNotWhitelisted();
+/**
+*  Asset is not supported (i.e. does not have an aggregator in Price Aggregator)
+*/
+error AssetNotSupported();
 
-    /**
-     *  Input is address(0)
-     */
-    error ZeroAddress();
+/**
+ * Empty array
+ */
+error EmptyArray();
 
-    ////////////
-    /// Base ///
-    ////////////
+/**
+*  Non-whitelisted step cannot be removed
+*/
+error StepNotWhitelisted();
 
-    /**
-     * Msg sender is not hub owner
-     */
-    error NotHubOwner();
+/**
+*  Input is address(0)
+*/
+error ZeroAddress();
 
-    /**
-     * Protocol is paused or frozen
-     */
-    error ProtocolPausedOrFrozen();
+////////////
+/// Base ///
+////////////
 
-    /**
-     * Protocol is frozen
-     */
-    error ProtocolFrozen();
+/**
+* Msg sender is not hub owner
+*/
+error NotHubOwner();
 
-    //////////////////
-    ///  Drem Hub  ///
-    //////////////////
+/**
+* Protocol is paused or frozen
+*/
+error ProtocolPausedOrFrozen();
 
-    /**
-     *  Invalid step parameters passed in
-     */
-    error InvalidParam();
+/**
+* Protocol is frozen
+*/
+error ProtocolFrozen();
 
-    /**
-     *  Step was not passed in with encoded args
-     */
-    error InvalidStep();
+//////////////////
+///  Drem Hub  ///
+//////////////////
 
-    /**
-     * Passed in Vault Deployer address is not a contract
-     */
-    error InvalidVaultDeployerAddress();
+/**
+*  Invalid step parameters passed in
+*/
+error InvalidParam();
 
-    /**
-     *  Step is already whitelisted
-     */
-    error StepAlreadyWhitelisted();
+/**
+*  Step was not passed in with encoded args
+*/
+error InvalidStep();
 
-    /**
-     *  'isTradingnAllowed' is set to false
-     */
-    error TradingDisabled();
+/**
+* Passed in Vault Deployer address is not a contract
+*/
+error InvalidVaultDeployerAddress();
 
-    /////////////////
-    ///   Vault   ///
-    /////////////////
+/**
+*  Step is already whitelisted
+*/
+error StepAlreadyWhitelisted();
 
-    error InvalidNumberOfSteps();
-    error InvalidStepsLength();
-    error StepsAndArgsNotSameLength();
+/**
+*  'isTradingnAllowed' is set to false
+*/
+error TradingDisabled();
 
-    ////////////////////////////
-    ///   Price Aggregator   ///
-    ////////////////////////////
+/////////////////
+///   Vault   ///
+/////////////////
 
-    error InvalidAggregatorRate();
-    error InvalidConversion();
-    error StaleUSDRate();
-    error StaleEthRate();
+/**
+* msg.sender is not the Drem Hub
+*/
+error MsgSenderIsNotHub();
+
+/**
+* Invalid number of steps
+*/
+error InvalidNumberOfSteps();
+error InvalidStepsLength();
+
+/**
+* Steps array and args array is not the same length
+*/
+error StepsAndArgsNotSameLength();
+
+////////////////////////////
+///   Price Aggregator   ///
+////////////////////////////
+
+error InvalidAggregatorRate();
+error InvalidConversion();
+error InvalidInputArrays();
+error InvalidOutputAsset();
+error StaleUSDRate();
+error StaleEthRate();
+
+////////////////////////////
+///    Asset Registry    ///
+////////////////////////////
+
+error AssetAlreadyWhitelisted();
+error AssetNotWhitelisted();
 }

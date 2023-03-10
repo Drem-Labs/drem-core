@@ -2,7 +2,6 @@
 pragma solidity =0.8.17;
 
 import {Ownable2StepUpgradeable} from "@openzeppelin-upgradeable/contracts/access/Ownable2StepUpgradeable.sol";
-import {Initializable} from "@openzeppelin-upgradeable/contracts/proxy/utils/Initializable.sol";
 import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {IDremHub} from "../interfaces/IDremHub.sol";
 import {IOwnable} from "../interfaces/IOwnable.sol";
@@ -14,21 +13,13 @@ import {Events} from "../libraries/Events.sol";
 contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     // keccak256('DremHub.ANY_CALL')
     bytes32 private constant ANY_CALL_HASH = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
+    
+    bool private isTradingAllowed;
+    address private vaultDeployer;
+    DataTypes.ProtocolState protocolState;
 
     // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
     mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
-
-    // I don't like this...
-    // If anyone gets control of the multisig, they can just take control of every vault shares and funds
-    // Should do access control just based on whitelisted steps
-
-    // mapping for allowed steps/contracts to modify vault shares and funds
-    mapping(address => bool) public allowedContracts;
-
-    bool private isTradingAllowed;
-    address private vaultDeployer;
-
-    DataTypes.ProtocolState protocolState;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
@@ -73,10 +64,6 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     function addWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
         _setWhitelistedStep(_step, _encodedArgs, true);
         emit Events.WhitelistedStepAdded(_step.interactionAddress, _step.functionSelector, _encodedArgs);
-    }
-
-    function setContractAllowed(address _contract, bool _allowed) external onlyOwner {
-        allowedContracts[_contract] = _allowed;
     }
 
     function removeWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {

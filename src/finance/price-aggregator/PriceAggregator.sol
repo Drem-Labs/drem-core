@@ -82,7 +82,6 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
      * @dev Removes a supported asset
      * @param _asset the asset to remove
      */
-
     function removeSupportedAsset(address _asset) external onlyHubOwner {
         if (_asset == address(0)) revert Errors.ZeroAddress();
 
@@ -96,21 +95,33 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
     /////////////////////////////
     ///     View Functions    ///
     /////////////////////////////
+
     /**
      * @notice Converts an amount of an input asset into an output asset
-     * @param _inputAmount the amount of the input asset to convert
-     * @param _inputAsset the input asset
+     * @param _inputAmounts the amounts of the input assets to convert
+     * @param _inputAssets the input assets
      * @param _outputAsset the output asset
      * @return the output amount
      */
-    function convertAsset(uint256 _inputAmount, address _inputAsset, address _outputAsset)
-        external
-        view
-        returns (uint256)
-    {
-        uint256 conversion = _convert(_inputAmount, _inputAsset, _outputAsset);
-        if (conversion == 0) revert Errors.InvalidConversion();
-        return conversion;
+    function convertAssets(uint256[] calldata _inputAmounts, address[] calldata _inputAssets, address _outputAsset) external view returns(uint256) {
+        if(_inputAmounts.length != _inputAssets.length) revert Errors.InvalidInputArrays();
+        _validateAsset(_outputAsset);
+
+        uint256 totalConversion;
+
+        for(uint256 i; i < _inputAssets.length; ) {
+            _validateAsset(_inputAssets[i]);
+
+            uint256 conversion = _convert(_inputAmounts[i], _inputAssets[i], _outputAsset);
+            // Questionable line of code...
+            // May prevent assets from being valued...
+            if (conversion == 0) revert Errors.InvalidConversion(); 
+
+            totalConversion = totalConversion + conversion;
+            unchecked{++i;}
+        }
+
+        return totalConversion;
     }
 
     function convertStepPositionPrice() external view {}
@@ -120,7 +131,7 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
      * @return bool
      */
     function isAssetSupported(address _asset) external view returns (bool) {
-        return address(assetToInfo[_asset].aggregator) != address(0);
+        return _isAssetSupported(_asset);
     }
 
     /**
@@ -140,6 +151,7 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
         return assetToInfo[_asset];
     }
 
+    // Internal Functions
     /**
      * @dev calculates and returns the conversion of a '_amount' of the '_inputAsset' into the '_outputAsset'
      * The input rate and output rate will should the same number of decimals when using Chainlink
@@ -193,6 +205,14 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
         (, int256 _answer,, uint256 _updatedAt,) = AggregatorV3Interface(_aggregator).latestRoundData();
         _validateRate(_answer, _updatedAt, _rateAsset);
         return uint256(_answer);
+    }
+
+    function _validateAsset(address _asset) internal view {
+        if(!(_isAssetSupported(_asset))) revert Errors.AssetNotSupported();
+    }
+
+    function _isAssetSupported(address _asset) internal view returns (bool) {
+        return address(assetToInfo[_asset].aggregator) != address(0);
     }
 
     function _validateAggregator(AggregatorV3Interface _aggregator, DataTypes.RateAsset _rateAsset) internal view {

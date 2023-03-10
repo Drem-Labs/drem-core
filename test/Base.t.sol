@@ -9,7 +9,6 @@ import {DremHub} from "../src/finance/core/DremHub.sol";
 import {Errors} from "../src/finance/libraries/Errors.sol";
 import {HubAware} from "../src/finance/base/HubAware.sol";
 import {HubOwnable} from "../src/finance/base/HubOwnable.sol";
-import {IDremHub} from "../src/finance/interfaces/IDremHub.sol";
 
 contract DremERC20Harness is DremERC20 {
     constructor(address dremHub) DremERC20(dremHub) {}
@@ -52,13 +51,13 @@ contract DremERC20Test is Test {
 
     function test_Transfer_GlobalStateFrozen() public {
         dremHub.setProtocolState(DataTypes.ProtocolState.Frozen);
-        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        vm.expectRevert(Errors.TradingDisabled.selector);
         dremERC20.transfer(alice, 1_000);
     }
 
     function test_Transfer_TradingNotAllowed() public {
         dremHub.setGlobalTrading(false);
-        vm.expectRevert(IDremHub.TradingDisabled.selector);
+        vm.expectRevert(Errors.TradingDisabled.selector);
         dremERC20.transfer(alice, 1_000);
     }
 

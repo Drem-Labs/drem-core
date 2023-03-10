@@ -171,6 +171,13 @@ contract Admin is PriceAggregatorHelper {
         assertEq(uint256(_aaveInfo.rateAsset), 0);
         assertEq(_aaveInfo.units, 0);
     }
+    
+    function test_RemoveSupportedAssets_RevertIf_EmptyAssetArray() public {
+        address[] memory _emptyAssetArray = new address[](0);
+
+        vm.expectRevert(Errors.EmptyArray.selector);
+        priceAggregator.removeSupportedAssets(_emptyAssetArray);
+    }
 
     function test_RemoveSupportedAsset_RevertIf_NotHubOwner() public {
         vm.startPrank(address(0x67));

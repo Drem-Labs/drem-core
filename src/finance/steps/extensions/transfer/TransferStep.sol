@@ -9,6 +9,9 @@ import {IVault} from "../../../interfaces/IVault.sol";
 import {IFeeController} from "../../../interfaces/IFeeController.sol";
 
 contract TransferStep is BaseStep {
+    // constants
+    uint256 constant INIT_SHARE_MAX = 1_000_000_000;
+
     // add whatever assets are allowed as denomination assets
     mapping(address => bool) public denominationAssets;
 
@@ -74,15 +77,23 @@ contract TransferStep is BaseStep {
             // keeping the ratio here and multiplying first maximizes accuracy and minimizes rounding in the case of small vault values
             argData.shares = fundSplit.funds * vaultValue / vaultSharesOutstanding;
         }
+        // need to set a maximum number of shares for the input amount (keeps the user from overflowing the uint256 share amount)
+        // this should only be executed if the vault shares outstaning is 0 AND the shares are too high
+        else if (argData.shares > INIT_SHARE_MAX) {
+            argData.shares = INIT_SHARE_MAX;
+        }
 
         // mint some shares (accounting before transfer)
         IVault(msg.sender).mintShares(argData.caller, argData.shares);
 
         // transfer funds in (will revert if the user attempts to purchase shares they cannot afford)
-        IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.funds);
+        bool success;
+        success = IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.funds);
+        if (!success) revert TransferLib.TransferFailed();
 
         // transfer fees
-        IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.fees);
+        success = IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.fees);
+        if (!success) revert TransferLib.TransferFailed();
 
         // emit the event that some shares were minted at some price
         emit TransferLib.SharesRedeemed(argData.shares, fundSplit.funds);

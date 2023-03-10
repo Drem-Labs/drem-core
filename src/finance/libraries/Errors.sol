@@ -90,6 +90,12 @@ error InvalidNumberOfSteps();
 error InvalidStepsLength();
 
 /**
+ * Signature Checking --> deadlines & signer
+*/
+error DeadlineExceeded();
+error InvalidSignature();
+
+/**
 * Steps array and args array is not the same length
 */
 error StepsAndArgsNotSameLength();

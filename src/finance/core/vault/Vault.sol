@@ -75,7 +75,9 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
 
     // execute steps forward, needs to verify the sender
     function windSteps() external nonReentrant {
+        // verify the sender
 
+        // run each step
     }
 
     // execute steps backwards, needs to verify the sender

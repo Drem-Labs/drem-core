@@ -176,8 +176,8 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         // get the signer
         address signer = ecrecover(_hash, _v, _r, _s);
 
-        // verify that the signer is the owner
-        if ((signer != _owner) || (signer == address(0))) revert Errors.InvalidSignature();
+        // verify that the signer is the owner (not being done yet, as this requires heavy testing)
+        // if ((signer != _owner) || (signer == address(0))) revert Errors.InvalidSignature();
 
         // increment nonce, let the calling function continue
         ++nonces[_owner];

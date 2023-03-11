@@ -21,16 +21,13 @@ contract TransferStep is BaseStep {
     // entrance/exit fees
     TransferLib.FeeData public fees;
 
-    // set the address to receive the fees (we can have multiple, but they should all adhere to some general interface)
-    address feeCollector;
-
-    // controls how many fees are paid
+    // controls how many fees are paid and to where
     address feeController;
 
     // constructor --> set the GAValuer
-    constructor(address _dremHub, TransferLib.FeeData memory _fees, address _feeCollector) BaseStep(_dremHub) {
+    constructor(address _dremHub, TransferLib.FeeData memory _fees, address _feeController) BaseStep(_dremHub) {
         _setFees(_fees);
-        _setFeeCollector(_feeCollector);
+        _setFeeController(_feeCollector);
     }
 
     // initialized with the denomination asset and the tracked assets
@@ -63,7 +60,7 @@ contract TransferStep is BaseStep {
         if (!success) revert TransferLib.TransferFailed();
 
         // transfer fees
-        success = IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.fees);
+        success = IERC20(fixedData.denominationAsset).transferFrom(argData.caller, IFeeController(feeController).collector(), fundSplit.fees);
         if (!success) revert TransferLib.TransferFailed();
 
         // emit the event that some shares were minted at some price
@@ -85,7 +82,7 @@ contract TransferStep is BaseStep {
         _sendFunds(argData.caller, fundSplit.funds, fixedData.denominationAsset);
 
         // transfer fees (should be done in generalist function)
-        _sendFunds(feeCollector, fundSplit.fees, fixedData.denominationAsset);
+        _sendFunds(IFeeController(feeController).collector(), fundSplit.fees, fixedData.denominationAsset);
     }
 
     // set allowed denomination assets (must be very liquid, not just tracked)
@@ -99,11 +96,6 @@ contract TransferStep is BaseStep {
         _setFees(_fees);
     }
 
-    // set the fee collector
-    function setFeeCollector(address _feeCollector) external onlyHubOwner {
-        _setFeeCollector(_feeCollector);
-    }
-
     // set the fee controller
     function setFeeController(address _feeController) external onlyHubOwner {
         _setFeeController(_feeController);
@@ -115,7 +107,9 @@ contract TransferStep is BaseStep {
         TransferLib.Distribution memory fundSplit;
 
         // get the fee that the user will incur (will be handled by the fee controller)
-        fundSplit.fees = IFeeController(feeController).calculateFee(_funds, msg.sender);
+        // save this for later, when we build a fee controller
+        // fundSplit.fees = IFeeController(feeController).calculateFee(_funds, msg.sender);
+        fundSplit.fees = 0;
 
         // get the remaining purchasing power
         fundSplit.funds = _funds - fundSplit.fees;
@@ -143,11 +137,6 @@ contract TransferStep is BaseStep {
     // set the step fees (internal)
     function _setFees(TransferLib.FeeData memory _fees) internal {
         fees = _fees;
-    }
-
-    // set the fee collector (internal)
-    function _setFeeCollector(address _feeCollector) internal {
-        feeCollector = _feeCollector;
     }
 
     // set the fee controller (internal)

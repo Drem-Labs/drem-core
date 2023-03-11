@@ -18,9 +18,6 @@ contract TransferStep is BaseStep {
     // keep all the stepData
     mapping(address => mapping(uint256 => TransferLib.FixedArgData)) public stepData;
 
-    // valuer
-    address public GAValuer;
-
     // entrance/exit fees
     TransferLib.FeeData public fees;
 
@@ -31,8 +28,7 @@ contract TransferStep is BaseStep {
     address feeController;
 
     // constructor --> set the GAValuer
-    constructor(address _dremHub, address _GAValuer, TransferLib.FeeData memory _fees, address _feeCollector) BaseStep(_dremHub) {
-        _setGAValuer(_GAValuer);
+    constructor(address _dremHub, TransferLib.FeeData memory _fees, address _feeCollector) BaseStep(_dremHub) {
         _setFees(_fees);
         _setFeeCollector(_feeCollector);
     }
@@ -60,33 +56,8 @@ contract TransferStep is BaseStep {
         // split the funds and fees
         TransferLib.Distribution memory fundSplit = _splitFunds(argData.funds);
 
-
-        // get the value of the vault --> going to be in some safe denomination asset --> can use this as a true value to calculate shares
-        uint256 vaultValue = IGAValuer(GAValuer).getVaultValue(msg.sender, fixedData.denominationAsset);
-
-        // get the number of shares of the vault
-        uint256 vaultSharesOutstanding = IERC20(msg.sender).totalSupply();
-
-        // if there are shares, ensure that the number of shares will be less than or equal to the expected value (if will get more shares, rewrite the sharesExpected)
-        // if there are no shares, leave the shares alone
-        if (vaultSharesOutstanding > 0) {
-            // revert if shares price is less than reality
-            if ((fundSplit.funds / argData.shares) < (vaultValue / vaultSharesOutstanding)) revert TransferLib.InsufficientFunds();
-
-            // if not reverted, set the number of shares to the max that the funds will buy
-            // keeping the ratio here and multiplying first maximizes accuracy and minimizes rounding in the case of small vault values
-            argData.shares = fundSplit.funds * vaultValue / vaultSharesOutstanding;
-        }
-        // need to set a maximum number of shares for the input amount (keeps the user from overflowing the uint256 share amount)
-        // this should only be executed if the vault shares outstaning is 0 AND the shares are too high
-        else if (argData.shares > INIT_SHARE_MAX) {
-            argData.shares = INIT_SHARE_MAX;
-        }
-
-        // mint some shares (accounting before transfer)
-        IVault(msg.sender).mintShares(argData.caller, argData.shares);
-
         // transfer funds in (will revert if the user attempts to purchase shares they cannot afford)
+        // this is different than sending funds, as that happens from the vault
         bool success;
         success = IERC20(fixedData.denominationAsset).transferFrom(argData.caller, msg.sender, fundSplit.funds);
         if (!success) revert TransferLib.TransferFailed();
@@ -107,25 +78,8 @@ contract TransferStep is BaseStep {
         // get the fixed data
         TransferLib.FixedArgData memory fixedData = stepData[msg.sender][_argIndex];
 
-        // calculate the number of funds per share --> get the value of the vault and shares outstanding
-        uint256 vaultValue = IGAValuer(GAValuer).getVaultValue(msg.sender, fixedData.denominationAsset);
-        uint256 vaultSharesOutstanding = IERC20(msg.sender).totalSupply();
-
-        // if the value per share is more than the value per share calculated, send more cash
-        uint256 fundsImplied = argData.shares * vaultValue / vaultSharesOutstanding;
-        if (argData.funds <= fundsImplied) {
-            argData.funds = fundsImplied;
-        }
-        // else, revert with insufficient shares
-        else {
-            revert TransferLib.InsufficientShares();
-        }
-
         // split the funds for the user and the protocol fees
         TransferLib.Distribution memory fundSplit = _splitFunds(argData.funds);
-
-        // burn some shares (the fact that they have these shares is validated in the ERC20 contract)
-        IVault(msg.sender).burnShares(argData.caller, argData.shares);
 
         // push the funds from the vault to the user (should be done in generalist function)
         _sendFunds(argData.caller, fundSplit.funds, fixedData.denominationAsset);
@@ -139,10 +93,6 @@ contract TransferStep is BaseStep {
         denominationAssets[_assetAddress] = _assetAllowed;
     }
 
-    // set the valuer (only the hub owner)
-    function setGAValuer(address _GAValuer) external onlyHubOwner {
-        _setGAValuer(_GAValuer);
-    }
 
     // set the fees (external)
     function setFees(TransferLib.FeeData memory _fees) external onlyHubOwner {
@@ -188,11 +138,6 @@ contract TransferStep is BaseStep {
 
         // revert if this transfer has not been executed
         if (!transferSuccess) revert TransferLib.TransferFailed();
-    }
-
-    // set the valuer (internal)
-    function _setGAValuer(address _GAValuer) internal {
-        GAValuer = _GAValuer;
     }
 
     // set the step fees (internal)

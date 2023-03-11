@@ -18,16 +18,12 @@ contract TransferStep is BaseStep {
     // keep all the stepData
     mapping(address => mapping(uint256 => TransferLib.FixedArgData)) public stepData;
 
-    // entrance/exit fees
-    TransferLib.FeeData public fees;
-
     // controls how many fees are paid and to where
     address feeController;
 
     // constructor --> set the GAValuer
-    constructor(address _dremHub, TransferLib.FeeData memory _fees, address _feeController) BaseStep(_dremHub) {
-        _setFees(_fees);
-        _setFeeController(_feeCollector);
+    constructor(address _dremHub, address _feeController) BaseStep(_dremHub) {
+        _setFeeController(_feeController);
     }
 
     // initialized with the denomination asset and the tracked assets
@@ -90,19 +86,13 @@ contract TransferStep is BaseStep {
         denominationAssets[_assetAddress] = _assetAllowed;
     }
 
-
-    // set the fees (external)
-    function setFees(TransferLib.FeeData memory _fees) external onlyHubOwner {
-        _setFees(_fees);
-    }
-
     // set the fee controller
     function setFeeController(address _feeController) external onlyHubOwner {
         _setFeeController(_feeController);
     }
 
     // get the funds split
-    function _splitFunds(uint256 _funds) internal returns(TransferLib.Distribution memory) {
+    function _splitFunds(uint256 _funds) internal pure returns(TransferLib.Distribution memory) {
         // allocate some memory to the distribution
         TransferLib.Distribution memory fundSplit;
 
@@ -132,11 +122,6 @@ contract TransferStep is BaseStep {
 
         // revert if this transfer has not been executed
         if (!transferSuccess) revert TransferLib.TransferFailed();
-    }
-
-    // set the step fees (internal)
-    function _setFees(TransferLib.FeeData memory _fees) internal {
-        fees = _fees;
     }
 
     // set the fee controller (internal)

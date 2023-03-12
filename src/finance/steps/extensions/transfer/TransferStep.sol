@@ -9,9 +9,6 @@ import {IVault} from "../../../interfaces/IVault.sol";
 import {IFeeController} from "../../../interfaces/IFeeController.sol";
 
 contract TransferStep is BaseStep {
-    // constants
-    uint256 constant INIT_SHARE_MAX = 1_000_000_000;
-
     // add whatever assets are allowed as denomination assets
     mapping(address => bool) public denominationAssets;
 

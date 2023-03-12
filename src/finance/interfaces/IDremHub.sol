@@ -5,9 +5,9 @@ import {DataTypes} from "../libraries/DataTypes.sol";
 import {IOwnable} from "./IOwnable.sol";
 
 interface IDremHub {
-    function addWhitelistedStep(DataTypes.StepInfo calldata, bytes calldata) external;
+    function addWhitelistedStep(DataTypes.StepInfo calldata) external;
 
-    function isStepWhitelisted(DataTypes.StepInfo calldata, bytes calldata) external view returns (bool);
+    function isStepWhitelisted(DataTypes.StepInfo calldata) external view returns (bool);
 
     function setGlobalTrading(bool) external;
 
@@ -15,7 +15,7 @@ interface IDremHub {
 
     function setVaultDeployer(address) external;
 
-    function removeWhitelistedStep(DataTypes.StepInfo calldata, bytes calldata) external;
+    function removeWhitelistedStep(DataTypes.StepInfo calldata) external;
 
     function deployVault() external;
 

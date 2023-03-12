@@ -18,8 +18,8 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     address private vaultDeployer;
     DataTypes.ProtocolState protocolState;
 
-    // keccak256(contractAddress, functionSelector) => keccak256(encodedArgs) => bool
-    mapping(bytes32 => mapping(bytes32 => bool)) private whitelistedSteps;
+    // just checking if it is a drem-verified step contract
+    mapping(address => bool) public whitelistedSteps;
 
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
@@ -62,13 +62,13 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     function addWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
-        _setWhitelistedStep(_step, _encodedArgs, true);
-        emit Events.WhitelistedStepAdded(_step.interactionAddress, _step.functionSelector, _encodedArgs);
+        _setWhitelistedStep(_step, true);
+        emit Events.WhitelistedStepAdded(_step.interactionAddress);
     }
 
     function removeWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
-        _setWhitelistedStep(_step, _encodedArgs, false);
-        emit Events.WhitelistedStepRemoved(_step.interactionAddress, _step.functionSelector, _encodedArgs);
+        _setWhitelistedStep(_step, false);
+        emit Events.WhitelistedStepRemoved(_step.interactionAddress);
     }
 
     // Need to verify with Drem team if vault's are upgradeable
@@ -86,15 +86,12 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
         if ((!(isTradingAllowed)) || protocolState == DataTypes.ProtocolState.Frozen) revert Errors.TradingDisabled();
     }
 
-    function isStepWhitelisted(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs)
+    function isStepWhitelisted(DataTypes.StepInfo calldata _step)
         external
         view
         returns (bool)
     {
-        bytes32 _stepHash = _getStepHash(_step);
-        bytes32 _encodedArgsHash = keccak256(_encodedArgs);
-
-        return whitelistedSteps[_stepHash][ANY_CALL_HASH] ? true : whitelistedSteps[_stepHash][_encodedArgsHash];
+        return whitelistedSteps[_step.interactionAddress];
     }
 
     function getProtocolState() external view returns (DataTypes.ProtocolState) {
@@ -112,15 +109,10 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      */
     function _onlyVaultDeployer() internal {}
 
-    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs, bool _setting)
+    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bool _setting)
         internal
     {
-        if (_step.interactionAddress == address(0) || _step.functionSelector == bytes4(0)) revert Errors.InvalidStep();
-
-        bytes32 _stepHash = _getStepHash(_step);
-        bytes32 _encodedArgsHash = keccak256(_encodedArgs);
-
-        whitelistedSteps[_stepHash][_encodedArgsHash] = _setting;
+        whitelistedSteps[_step.interactionAddress] = _setting;
     }
 
     function _getStepHash(DataTypes.StepInfo calldata _step) internal pure returns (bytes32) {

@@ -11,9 +11,6 @@ import {Events} from "../libraries/Events.sol";
 
 // Initializable is inherited from Ownable2StepUpgradeable
 contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
-    // keccak256('DremHub.ANY_CALL')
-    bytes32 private constant ANY_CALL_HASH = 0x6d1d2d8a4086e5e1886934ed17d0fea24fea45860e94b9c1d77a6a38407e239b;
-    
     bool private isTradingAllowed;
     address private vaultDeployer;
     DataTypes.ProtocolState protocolState;
@@ -61,12 +58,12 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
         vaultDeployer = _vaultDeployer;
     }
 
-    function addWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
+    function addWhitelistedStep(DataTypes.StepInfo calldata _step) external onlyOwner {
         _setWhitelistedStep(_step, true);
         emit Events.WhitelistedStepAdded(_step.interactionAddress);
     }
 
-    function removeWhitelistedStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external onlyOwner {
+    function removeWhitelistedStep(DataTypes.StepInfo calldata _step) external onlyOwner {
         _setWhitelistedStep(_step, false);
         emit Events.WhitelistedStepRemoved(_step.interactionAddress);
     }

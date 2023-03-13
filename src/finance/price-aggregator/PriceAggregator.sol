@@ -133,13 +133,12 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
             _validateAsset(_inputAssets[i]);
 
             uint256 conversion = _convert(_inputAmounts[i], _inputAssets[i], _outputAsset);
-            // Questionable line of code...
-            // May prevent assets from being valued...
-            if (conversion == 0) revert Errors.InvalidConversion(); 
 
             totalConversion = totalConversion + conversion;
             unchecked{++i;}
         }
+
+        if (totalConversion == 0) revert Errors.InvalidConversion();
 
         return totalConversion;
     }

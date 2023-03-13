@@ -87,6 +87,10 @@ error MsgSenderIsNotHub();
 * Invalid number of steps
 */
 error InvalidNumberOfSteps();
+
+/**
+*   
+ */
 error InvalidStepsLength();
 
 /**
@@ -116,6 +120,8 @@ error StaleEthRate();
 ///    Asset Registry    ///
 ////////////////////////////
 
+error AssetAlreadyDenominationAsset();
+error AssetNotDenominationAsset();
 error AssetAlreadyWhitelisted();
 error AssetNotWhitelisted();
 }

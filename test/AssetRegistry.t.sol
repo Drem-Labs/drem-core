@@ -82,6 +82,10 @@ contract Admin is AssetRegistryHelper {
     }
 
     function test_WhitelistAssets() public {    
+
+        vm.expectEmit(true, true, true, true);
+        emit Events.WhitelistedAssetsAdded(assets);
+
         assetRegistry.whitelistAssets(assets);
 
         assertTrue(assetRegistry.isAssetWhitelisted(AAVE_ADDRESS));
@@ -147,13 +151,54 @@ contract Admin is AssetRegistryHelper {
         assetRegistry.whitelistAssets(_redundantAsset);
     }
 
-    function test_removeWhitelistedAssets() public {}
+    function test_removeWhitelistedAssets() public {
 
-    function test_RemoveWhitelistedAssets_RevertIf_NotHubOwner() public {}
+        // Arrange
+        assetRegistry.whitelistAssets(assets);
+        address[] memory _values = assetRegistry.getWhitelistedAssets();
+        assertEq(_values.length, 3);
 
-    function test_RemoveWhitelistedAssets_RevertIf_EmptyArray() public {}
+        vm.expectEmit(true, true, true, true);
+        emit Events.WhitelistedAssetsRemoved(assets);
 
-    function test_RemoveWhitelistedAssets_RevertIf_AssetNotWhitelisted() public {}
+        assetRegistry.removeWhitelistedAssets(assets);
+
+        _values = assetRegistry.getWhitelistedAssets();
+        assertEq(_values.length, 0); 
+    }
+
+    function test_RemoveWhitelistedAssets_RevertIf_NotHubOwner() public {
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        assetRegistry.removeWhitelistedAssets(assets); 
+
+        vm.stopPrank();
+    }
+
+    function test_RemoveWhitelistedAssets_RevertIf_EmptyArray() public {
+        address[] memory _emptyArray;
+
+        vm.expectRevert(Errors.EmptyArray.selector);
+        assetRegistry.removeWhitelistedAssets(_emptyArray);
+    }
+
+    function test_RemoveWhitelistedAssets_RevertIf_AssetNotWhitelisted() public {
+        address[] memory _nonWhitelistedAsset = new address[](1);
+        _nonWhitelistedAsset[0] =  DAI_ADDRESS;
+
+        vm.expectRevert(Errors.AssetNotWhitelisted.selector);
+        assetRegistry.removeWhitelistedAssets(_nonWhitelistedAsset);
+    }
+
+    function test_RemoveWhitelistedAssets_RevertIf_AssetZeroAddress() public {
+        address[] memory _zeroAddress = new address[](1);
+        _zeroAddress[0] =  address(0);
+
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        assetRegistry.removeWhitelistedAssets(_zeroAddress);
+    }
+
 
     function test_UUPSUpgrade() public {}
 }

@@ -5,10 +5,16 @@ import {EnumerableSet} from "@openzeppelin/contracts/utils/structs/EnumerableSet
 import {UUPSUpgradeable} from "@openzeppelin-upgradeable/contracts/proxy/utils/UUPSUpgradeable.sol";
 import {DataTypes} from "../libraries/DataTypes.sol";
 import {Errors} from "../libraries/Errors.sol";
+import {Events} from "../libraries/Events.sol"; 
 import {HubOwnable} from "../base/HubOwnable.sol";
 import {IPriceAggregator} from "../interfaces/IPriceAggregator.sol";
 
 /// @title Drem Asset Registry
+
+/**
+ * Invariants: 
+ *  - An asset can be a denomination asset if and only if it is whitelisted 
+ */
 
 contract AssetRegistry is HubOwnable, UUPSUpgradeable {
     using EnumerableSet for EnumerableSet.AddressSet;
@@ -18,6 +24,8 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
 
     EnumerableSet.AddressSet private whitelistedAssets;
 
+    EnumerableSet.AddressSet private denominationAssets; 
+
     /**
      * @dev This empty reserved space is put in place to allow future versions to add new
      * variables without shifting down storage in the inheritance chain.
@@ -25,8 +33,48 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      */
     uint256[50] private __gap;
 
+    // To do: set PRICE_AGGREGATOR in storage in place of immutable
     constructor(address _dremHub, address _priceAggregator) HubOwnable(_dremHub) {
         PRICE_AGGREGATOR = IPriceAggregator(_priceAggregator);
+    }
+    /**
+     @dev Add denomination assets
+     */
+    function addDenominationAssets(address[] calldata _denominationAssets) external onlyHubOwner {
+        uint256 len = _denominationAssets.length;
+
+        if(len == 0) revert Errors.EmptyArray();
+        
+        for(uint256 i; i < len; ) {
+            _validateAsset(_denominationAssets[i]);
+            // Denomination asset must be whitelisted
+            if(!(whitelistedAssets.contains(_denominationAssets[i]))) revert Errors.AssetNotWhitelisted(); 
+            if(denominationAssets.contains(_denominationAssets[i])) revert Errors.AssetAlreadyDenominationAsset();
+
+            denominationAssets.add(_denominationAssets[i]);
+
+            unchecked{++i;}
+        }
+
+        emit Events.DenominationAssetsAdded(_denominationAssets);
+
+    } 
+
+    function removeDenominationAssets(address[] calldata _denominationAssets) external onlyHubOwner {
+        uint256 len = _denominationAssets.length;
+
+        if(len == 0) revert Errors.EmptyArray();
+        
+        for(uint256 i; i < len; ) {
+            if(_denominationAssets[i] == address(0)) revert Errors.ZeroAddress();
+            if(!(denominationAssets.contains(_denominationAssets[i]))) revert Errors.AssetNotDenominationAsset();
+
+            denominationAssets.remove(_denominationAssets[i]);
+
+            unchecked{++i;}
+        }
+
+        emit Events.DenominationAssetsRemoved(_denominationAssets);
     }
 
     /**
@@ -34,15 +82,18 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      * @param _assets the assets to whitelist
      */
     function whitelistAssets(address[] calldata _assets) external onlyHubOwner {
-        uint256 len = _assets.length;
-        
-        if(len == 0) revert Errors.EmptyArray();
+        _validateArray(_assets);
 
-        for(uint256 i; i < len;) {
+        for(uint256 i; i < _assets.length;) {
+            if(whitelistedAssets.contains(_assets[i])) revert Errors.AssetAlreadyWhitelisted();
             _validateAsset(_assets[i]);
+
             whitelistedAssets.add(_assets[i]);
+
             unchecked{++i;}
         }
+
+        emit Events.WhitelistedAssetsAdded(_assets);
     }
 
     /**
@@ -50,15 +101,18 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      * @param _assets the assets to remove
      */
     function removeWhitelistedAssets(address[] calldata _assets) external onlyHubOwner {
-        uint256 len = _assets.length;
-        
-        if(len == 0) revert Errors.EmptyArray();
+        _validateArray(_assets);
 
-        for(uint256 i; i < len; ) {
+        for(uint256 i; i < _assets.length; ) {
+            if(_assets[i] == address(0)) revert Errors.ZeroAddress();
             if(!(whitelistedAssets.contains(_assets[i]))) revert Errors.AssetNotWhitelisted();
+
             whitelistedAssets.remove(_assets[i]);
+
             unchecked{++i;}
         }
+
+        emit Events.WhitelistedAssetsRemoved(_assets);
     }
 
     /**
@@ -82,10 +136,16 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
         return whitelistedAssets.values();
     }
 
+    /**
+     * @dev cuts down on bytecode size
+     */
+    function _validateArray(address[] calldata _array) internal view {
+        if(_array.length == 0) revert Error.EmptyArray();
+    }
+
     function _validateAsset(address _asset) internal view {
         if(_asset == address(0)) revert Errors.ZeroAddress();
         if(!(PRICE_AGGREGATOR.isAssetSupported(_asset))) revert Errors.AssetNotSupported();
-        if(whitelistedAssets.contains(_asset)) revert Errors.AssetAlreadyWhitelisted();
     }
 
     function _authorizeUpgrade(address) internal virtual override onlyHubOwner{}

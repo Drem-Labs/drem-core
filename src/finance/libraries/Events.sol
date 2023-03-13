@@ -59,4 +59,12 @@ library Events {
      *
      */
     event SupportedAssetRemoved(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
+
+    ///////////////////////////////////
+    //     Asset Registry Events     //
+    ///////////////////////////////////
+    event DenominationAssetsAdded(address[] denominationAssets);
+    event DenominationAssetsRemoved(address[] denominationAssets); 
+    event WhitelistedAssetsAdded(address[] whitelistedAssets);
+    event WhitelistedAssetsRemoved(address[] whitelistedAssets);
 }

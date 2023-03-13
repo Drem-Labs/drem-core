@@ -25,7 +25,6 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
 
     // vault accounting
     DataTypes.StepInfo[] steps;
-    bytes[] fixedEncodedArgsPerStep;
     address[] vaultAssets;
 
     // signatures

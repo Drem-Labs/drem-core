@@ -140,7 +140,7 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      * @dev cuts down on bytecode size
      */
     function _validateArray(address[] calldata _array) internal view {
-        if(_array.length == 0) revert Error.EmptyArray();
+        if(_array.length == 0) revert Errors.EmptyArray();
     }
 
     function _validateAsset(address _asset) internal view {

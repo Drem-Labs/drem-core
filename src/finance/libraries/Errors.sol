@@ -12,8 +12,8 @@ library Errors {
 error AssetNotSupported();
 
 /**
- * Empty array
- */
+* Empty array
+*/
 error EmptyArray();
 
 /**
@@ -90,11 +90,11 @@ error InvalidNumberOfSteps();
 
 /**
 *   
- */
+*/
 error InvalidStepsLength();
 
 /**
- * Signature Checking --> deadlines & signer
+* Signature Checking --> deadlines & signer
 */
 error DeadlineExceeded();
 error InvalidSignature();
@@ -108,20 +108,62 @@ error StepsAndArgsNotSameLength();
 ///   Price Aggregator   ///
 ////////////////////////////
 
+/**
+* Answer from Chainlink Oracle is <= 0
+*/
 error InvalidAggregatorRate();
+
+/**
+* Total conversion comes out to zero
+*/
 error InvalidConversion();
+
+/**
+*  Asset, aggregator, and rate asset arrays do not match in length
+*/
 error InvalidAssetArrays();
+
+/**
+* Input ammounts and input asset arrays do not match in length
+*/
 error InvalidInputArrays();
+
+/**
+* Output asset is not supported
+*/
 error InvalidOutputAsset();
+
+/**
+* USD rate is stale (updated at more than 30 seconds ago)
+*/
 error StaleUSDRate();
+
+/**
+* ETH rate is stale (updated at more than 24 hours ago)
+*/
 error StaleEthRate();
 
 ////////////////////////////
 ///    Asset Registry    ///
 ////////////////////////////
 
+/**
+*  Asset passed into addDenominationAssets() is already a denomination asset
+*/
 error AssetAlreadyDenominationAsset();
+
+/**
+*  Asset passed into removeDenominationAssets() is not a denomination asset
+*/
 error AssetNotDenominationAsset();
+
+/**
+*  Asset passed into whitelistAssets() is already a whitelisted asset
+*/
 error AssetAlreadyWhitelisted();
+
+/**
+*  Asset passed into removeWhitelistedAssets() is not a whitelisted asset
+*/
 error AssetNotWhitelisted();
 }

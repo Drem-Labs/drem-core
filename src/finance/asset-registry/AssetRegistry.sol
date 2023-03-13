@@ -59,6 +59,10 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
         emit Events.DenominationAssetsAdded(_denominationAssets);
     } 
 
+    /**
+     * @dev Admin function to remove denomination assets
+     * @param _denominationAssets the denomination assets to remove 
+     */
     function removeDenominationAssets(address[] calldata _denominationAssets) external onlyHubOwner {
         _validateArray(_denominationAssets);
         

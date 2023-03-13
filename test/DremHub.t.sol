@@ -139,7 +139,7 @@ contract Admin is DremHubHelper {
         dremHub.setVaultDeployer(address(this));
     }
 
-    function test_UpgradeTo_Owner() public {
+    function test_UpgradeTo() public {
         address _newDremHubImplementation = address(new DremHub());
         dremHub.upgradeTo(_newDremHubImplementation);
     }

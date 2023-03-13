@@ -199,6 +199,126 @@ contract Admin is AssetRegistryHelper {
         assetRegistry.removeWhitelistedAssets(_zeroAddress);
     }
 
+    function test_AddDenominationAssets() public {
+        assetRegistry.whitelistAssets(assets);
 
-    function test_UUPSUpgrade() public {}
+        vm.expectEmit(true, true, true, true);
+        emit Events.DenominationAssetsAdded(assets);
+
+        assetRegistry.addDenominationAssets(assets);
+
+        assertTrue(assetRegistry.isAssetDenominationAsset(AAVE_ADDRESS));
+        assertTrue(assetRegistry.isAssetDenominationAsset(USDC_ADDRESS));
+        assertTrue(assetRegistry.isAssetDenominationAsset(WMATIC_ADDRESS));
+
+
+        address[] memory _denominationAssets = assetRegistry.getDenominationAssets();
+
+        bool _containsInvalidAsset = false;
+
+        // Ordering is not guaranteed in enumerable set
+        for(uint256 i; i < _denominationAssets.length; i++) {
+            if (_denominationAssets[i] == AAVE_ADDRESS || _denominationAssets[i] == USDC_ADDRESS || _denominationAssets[i] == WMATIC_ADDRESS) {
+                continue;
+            }
+
+            _containsInvalidAsset = true;
+        }
+
+        assertFalse(_containsInvalidAsset);        
+    }
+
+    function test_AddDenominationAssets_RevertIf_NotHubOwner() public {
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        assetRegistry.addDenominationAssets(assets);
+
+        vm.stopPrank();
+    }
+
+    function test_AddDenominationAssets_RevertIf_ZeroAddress() public {
+        address[] memory _zeroAddress = new address[](1);
+
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        assetRegistry.addDenominationAssets(_zeroAddress);
+    }
+
+    function test_AddDenominationAssets_RevertIf_NotSupported() public {
+        address[] memory _unsupportedAsset = new address[](1);
+        _unsupportedAsset[0] = DAI_ADDRESS;
+
+        vm.expectRevert(Errors.AssetNotSupported.selector);
+        assetRegistry.addDenominationAssets(_unsupportedAsset);
+    }
+
+    function test_AddDenominationAssets_RevertIf_NotWhitelisted() public {
+        vm.expectRevert(Errors.AssetNotWhitelisted.selector);
+        assetRegistry.addDenominationAssets(assets);
+    }
+
+    function test_AddDenominationAssets_RevertIf_AlreadyDenominationAsset() public { 
+        assetRegistry.whitelistAssets(assets);
+        assetRegistry.addDenominationAssets(assets);
+
+        vm.expectRevert(Errors.AssetAlreadyDenominationAsset.selector);
+        assetRegistry.addDenominationAssets(assets);
+    }
+
+    function test_RemoveDenominationAssets() public {
+        // Assume
+        assetRegistry.whitelistAssets(assets);
+
+        assetRegistry.addDenominationAssets(assets);
+        address[] memory _denominationAssets = assetRegistry.getDenominationAssets();
+        assertEq(_denominationAssets.length, 3);
+
+        vm.expectEmit(true, true, true, true);
+        emit Events.DenominationAssetsRemoved(assets);
+
+        assetRegistry.removeDenominationAssets(assets);
+
+        _denominationAssets = assetRegistry.getDenominationAssets();
+        assertEq(_denominationAssets.length, 0);
+    }
+
+    function test_RemoveDenominationAssets_RevertIf_NotHubOwner() public {
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        assetRegistry.removeDenominationAssets(assets);
+
+        vm.stopPrank();
+    }
+
+    function test_RemoveDenominationAssets_RevertIf_ZeroAddress() public {
+        address[] memory _zeroAddress = new address[](1);
+
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        assetRegistry.removeDenominationAssets(_zeroAddress);
+    }
+
+    function test_RemoveDenominationAssets_RevertIf_NotDenominationAsset() public {
+        address[] memory _invalidDenominationAsset = new address[](1);
+        _invalidDenominationAsset[0] = DAI_ADDRESS; 
+
+        vm.expectRevert(Errors.AssetNotDenominationAsset.selector);
+        assetRegistry.removeDenominationAssets(_invalidDenominationAsset);
+    }
+
+    function test_UpgradeTo() public {
+        address _newAssetRegistryImplementation = address(new AssetRegistry(address(dremHub), address(priceAggregator)));
+        assetRegistry.upgradeTo(_newAssetRegistryImplementation);
+    }
+
+    function test_Upgrade_RevertIf_NonOwner() public {
+        address _newAssetRegistryImplementation = address(new AssetRegistry(address(dremHub), address(priceAggregator)));
+
+        vm.startPrank(address(0x67));
+
+        vm.expectRevert(Errors.NotHubOwner.selector);
+        assetRegistry.upgradeTo(_newAssetRegistryImplementation);
+
+        vm.stopPrank();
+    }
 }

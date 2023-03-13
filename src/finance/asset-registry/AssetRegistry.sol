@@ -37,15 +37,15 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
     constructor(address _dremHub, address _priceAggregator) HubOwnable(_dremHub) {
         PRICE_AGGREGATOR = IPriceAggregator(_priceAggregator);
     }
+
     /**
-     @dev Add denomination assets
+     * @dev Admin function to add denomination assets
+     * @param _denominationAssets the denomination assets to add 
      */
     function addDenominationAssets(address[] calldata _denominationAssets) external onlyHubOwner {
-        uint256 len = _denominationAssets.length;
-
-        if(len == 0) revert Errors.EmptyArray();
+        _validateArray(_denominationAssets);
         
-        for(uint256 i; i < len; ) {
+        for(uint256 i; i < _denominationAssets.length; ) {
             _validateAsset(_denominationAssets[i]);
             // Denomination asset must be whitelisted
             if(!(whitelistedAssets.contains(_denominationAssets[i]))) revert Errors.AssetNotWhitelisted(); 
@@ -57,15 +57,12 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
         }
 
         emit Events.DenominationAssetsAdded(_denominationAssets);
-
     } 
 
     function removeDenominationAssets(address[] calldata _denominationAssets) external onlyHubOwner {
-        uint256 len = _denominationAssets.length;
-
-        if(len == 0) revert Errors.EmptyArray();
+        _validateArray(_denominationAssets);
         
-        for(uint256 i; i < len; ) {
+        for(uint256 i; i < _denominationAssets.length; ) {
             if(_denominationAssets[i] == address(0)) revert Errors.ZeroAddress();
             if(!(denominationAssets.contains(_denominationAssets[i]))) revert Errors.AssetNotDenominationAsset();
 
@@ -116,6 +113,15 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
     }
 
     /**
+     * @notice returns whether or not an asset is a denomination asset
+     * @param _asset the asset
+     * @return true if whitelisted, false if not
+     */
+    function isAssetDenominationAsset(address _asset) external view returns(bool) {
+        return denominationAssets.contains(_asset);
+    }
+
+    /**
      * @notice returns whether or not an asset is whitelisted
      * @param _asset the asset
      * @return true if whitelisted, false if not
@@ -124,6 +130,9 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
         return whitelistedAssets.contains(_asset);
     }
 
+    /**
+     * @notice returns the price aggregator contract
+     */
     function getPriceAggregator() external view returns(IPriceAggregator) {
         return PRICE_AGGREGATOR;
     }
@@ -137,16 +146,30 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
     }
 
     /**
+     * @notice returns all denomination assets
+     * @return address array containing all denomination assets
+     */
+    function getDenominationAssets() external view returns(address[] memory) {
+        return denominationAssets.values();
+    }
+
+    /**
      * @dev cuts down on bytecode size
      */
     function _validateArray(address[] calldata _array) internal view {
         if(_array.length == 0) revert Errors.EmptyArray();
     }
 
+    /**
+     * @dev cuts down on bytecode size
+     */
     function _validateAsset(address _asset) internal view {
         if(_asset == address(0)) revert Errors.ZeroAddress();
         if(!(PRICE_AGGREGATOR.isAssetSupported(_asset))) revert Errors.AssetNotSupported();
     }
 
+    /**
+     * @dev overridden authorize upgrade...
+     */
     function _authorizeUpgrade(address) internal virtual override onlyHubOwner{}
 }

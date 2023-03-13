@@ -38,7 +38,6 @@ contract TransferStepHelper is Fork {
         TransferStep transferStep = new TransferStep(address(dremHub), address(0));
 
         // add the transfer step to the hub
-        dremHub
 
         // deploy a vault
         vault = new Vault(address(dremHub));

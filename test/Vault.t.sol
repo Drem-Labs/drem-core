@@ -18,12 +18,12 @@ contract VaultHarness is Vault {
         Vault._addSteps(_steps);
     }
 
-    function validateStep(DataTypes.StepInfo calldata _step, bytes calldata _encodedArgs) external view {
-        Vault._validateStep(_step, _encodedArgs);
+    function validateStep(DataTypes.StepInfo calldata _step) external view {
+        Vault._validateStep(_step);
     }
 
-    function validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) external view {
-        Vault._validateSteps(_steps, _encodedArgsPerStep);
+    function validateSteps(DataTypes.StepInfo[] calldata _steps) external view {
+        Vault._validateSteps(_steps);
     }
 }
 
@@ -74,7 +74,7 @@ contract InternalFunctions is VaultHelper {
                 DataTypes.StepInfo({interactionAddress: _erc20, functionSelector: ERC20.transfer.selector});
             bytes memory _encodedArgs = ANY_CALL;
 
-            dremHub.addWhitelistedStep(_step, _encodedArgs);
+            dremHub.addWhitelistedStep(_step);
 
             steps.push(_step);
         }
@@ -98,9 +98,9 @@ contract InternalFunctions is VaultHelper {
             DataTypes.StepInfo({interactionAddress: _erc20, functionSelector: ERC20.transfer.selector});
         bytes memory _encodedArgs = ANY_CALL;
 
-        dremHub.addWhitelistedStep(_step, _encodedArgs);
+        dremHub.addWhitelistedStep(_step);
 
-        vaultHarness.validateStep(_step, _encodedArgs);
+        vaultHarness.validateStep(_step);
     }
 
     function test_validateSteps_RevertIf_NoSteps() public {
@@ -108,7 +108,7 @@ contract InternalFunctions is VaultHelper {
         bytes[] memory _encodedArgsPerStep;
 
         vm.expectRevert(Errors.InvalidNumberOfSteps.selector);
-        vaultHarness.validateSteps(_steps, _encodedArgsPerStep);
+        vaultHarness.validateSteps(_steps);
     }
 
     function test_validateSteps_RevertIf_TooManySteps() public {
@@ -120,7 +120,7 @@ contract InternalFunctions is VaultHelper {
         }
 
         vm.expectRevert(Errors.InvalidNumberOfSteps.selector);
-        vaultHarness.validateSteps(steps, _encodedArgsPerStep);
+        vaultHarness.validateSteps(steps);
 
         assertEq(steps.length, 11);
     }

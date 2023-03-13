@@ -59,7 +59,7 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         if(_steps.length == 0 || _encodedArgsPerStep.length == 0) revert Errors.EmptyArray();
         if (_steps.length != _encodedArgsPerStep.length) revert Errors.StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
-        _validateSteps(_steps, _encodedArgsPerStep);
+        _validateSteps(_steps);
         _addSteps(_steps);
     }
 
@@ -137,19 +137,19 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         return hashStruct;
     }
 
-    function _validateSteps(DataTypes.StepInfo[] calldata _steps, bytes[] calldata _encodedArgsPerStep) internal view {
+    function _validateSteps(DataTypes.StepInfo[] calldata _steps) internal view {
         if (_steps.length > MAX_STEPS || _steps.length == 0) revert Errors.InvalidNumberOfSteps();
 
         for (uint256 i; i < _steps.length;) {
-            _validateStep(_steps[i], _encodedArgsPerStep[i]);
+            _validateStep(_steps[i]);
             unchecked {
                 ++i;
             }
         }
     }
 
-    function _validateStep(DataTypes.StepInfo calldata _step, bytes memory _encodedArgs) internal view {
-        if (!(DREM_HUB.isStepWhitelisted(_step, _encodedArgs))) revert Errors.StepNotWhitelisted();
+    function _validateStep(DataTypes.StepInfo calldata _step) internal view {
+        if (!(DREM_HUB.isStepWhitelisted(_step))) revert Errors.StepNotWhitelisted();
     }
 
     function _addSteps(DataTypes.StepInfo[] calldata _steps) internal {

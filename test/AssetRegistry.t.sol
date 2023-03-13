@@ -22,7 +22,7 @@ contract AssetRegistryHelper is Fork {
     address assetRegistryImplementation;
 
     address[] assets;
-    AggregatorV3Interface [] aggregators;
+    AggregatorV3Interface[] aggregators;
 
     function setUp() public virtual override {
         Fork.setUp();
@@ -41,9 +41,9 @@ contract AssetRegistryHelper is Fork {
         assets.push(WMATIC_ADDRESS);
 
         AggregatorV3Interface[] memory _aggregators = new AggregatorV3Interface[](3);
-        _aggregators[0] =  AAVE_TO_USD_PRICE_FEED;
-        _aggregators[1] =  USDC_TO_USD_PRICE_FEED;
-        _aggregators[2] =  MATIC_TO_USD_PRICE_FEED;
+        _aggregators[0] = AAVE_TO_USD_PRICE_FEED;
+        _aggregators[1] = USDC_TO_USD_PRICE_FEED;
+        _aggregators[2] = MATIC_TO_USD_PRICE_FEED;
 
         DataTypes.RateAsset[] memory _rateAssets = new DataTypes.RateAsset[](3);
 
@@ -60,7 +60,7 @@ contract AssetRegistryHelper is Fork {
 
         DataTypes.SupportedAssetInfo memory _aaveInfo = priceAggregator.getSupportedAssetInfo(AAVE_ADDRESS);
         DataTypes.SupportedAssetInfo memory _usdcInfo = priceAggregator.getSupportedAssetInfo(USDC_ADDRESS);
-        DataTypes.SupportedAssetInfo memory _maticInfo = priceAggregator.getSupportedAssetInfo(WMATIC_ADDRESS); 
+        DataTypes.SupportedAssetInfo memory _maticInfo = priceAggregator.getSupportedAssetInfo(WMATIC_ADDRESS);
 
         assertEq(address(_aaveInfo.aggregator), address(AAVE_TO_USD_PRICE_FEED));
         assertEq(uint256(_aaveInfo.rateAsset), uint256(DataTypes.RateAsset.USD));
@@ -81,8 +81,7 @@ contract Admin is AssetRegistryHelper {
         AssetRegistryHelper.setUp();
     }
 
-    function test_WhitelistAssets() public {    
-
+    function test_WhitelistAssets() public {
         vm.expectEmit(true, true, true, true);
         emit Events.WhitelistedAssetsAdded(assets);
 
@@ -97,7 +96,7 @@ contract Admin is AssetRegistryHelper {
         bool _containsInvalidAsset = false;
 
         // Ordering is not guaranteed in enumerable set
-        for(uint256 i; i < _assets.length; i++) {
+        for (uint256 i; i < _assets.length; i++) {
             if (_assets[i] == AAVE_ADDRESS || _assets[i] == USDC_ADDRESS || _assets[i] == WMATIC_ADDRESS) {
                 continue;
             }
@@ -112,7 +111,7 @@ contract Admin is AssetRegistryHelper {
         vm.startPrank(address(0x67));
 
         vm.expectRevert(Errors.NotHubOwner.selector);
-        assetRegistry.whitelistAssets(assets); 
+        assetRegistry.whitelistAssets(assets);
 
         vm.stopPrank();
     }
@@ -120,15 +119,15 @@ contract Admin is AssetRegistryHelper {
     function test_WhitelistAssets_RevertIf_EmptyArray() public {
         address[] memory _emptyAddressArray = new address[](0);
 
-        vm.expectRevert(Errors.EmptyArray.selector); 
+        vm.expectRevert(Errors.EmptyArray.selector);
         assetRegistry.whitelistAssets(_emptyAddressArray);
     }
 
     function test_WhitelistAssets_RevertIf_ZeroAddress() public {
         assets[1] = address(0);
 
-        vm.expectRevert(Errors.ZeroAddress.selector); 
-        assetRegistry.whitelistAssets(assets); 
+        vm.expectRevert(Errors.ZeroAddress.selector);
+        assetRegistry.whitelistAssets(assets);
     }
 
     function test_WhitelistAssets_RevertIf_AssetNotSupported() public {
@@ -145,14 +144,13 @@ contract Admin is AssetRegistryHelper {
         address[] memory _redundantAsset = new address[](1);
         _redundantAsset[0] = USDC_ADDRESS;
 
-        assetRegistry.whitelistAssets(assets); 
+        assetRegistry.whitelistAssets(assets);
 
         vm.expectRevert(Errors.AssetAlreadyWhitelisted.selector);
         assetRegistry.whitelistAssets(_redundantAsset);
     }
 
     function test_removeWhitelistedAssets() public {
-
         // Arrange
         assetRegistry.whitelistAssets(assets);
         address[] memory _values = assetRegistry.getWhitelistedAssets();
@@ -164,14 +162,14 @@ contract Admin is AssetRegistryHelper {
         assetRegistry.removeWhitelistedAssets(assets);
 
         _values = assetRegistry.getWhitelistedAssets();
-        assertEq(_values.length, 0); 
+        assertEq(_values.length, 0);
     }
 
     function test_RemoveWhitelistedAssets_RevertIf_NotHubOwner() public {
         vm.startPrank(address(0x67));
 
         vm.expectRevert(Errors.NotHubOwner.selector);
-        assetRegistry.removeWhitelistedAssets(assets); 
+        assetRegistry.removeWhitelistedAssets(assets);
 
         vm.stopPrank();
     }
@@ -185,7 +183,7 @@ contract Admin is AssetRegistryHelper {
 
     function test_RemoveWhitelistedAssets_RevertIf_AssetNotWhitelisted() public {
         address[] memory _nonWhitelistedAsset = new address[](1);
-        _nonWhitelistedAsset[0] =  DAI_ADDRESS;
+        _nonWhitelistedAsset[0] = DAI_ADDRESS;
 
         vm.expectRevert(Errors.AssetNotWhitelisted.selector);
         assetRegistry.removeWhitelistedAssets(_nonWhitelistedAsset);
@@ -193,7 +191,7 @@ contract Admin is AssetRegistryHelper {
 
     function test_RemoveWhitelistedAssets_RevertIf_AssetZeroAddress() public {
         address[] memory _zeroAddress = new address[](1);
-        _zeroAddress[0] =  address(0);
+        _zeroAddress[0] = address(0);
 
         vm.expectRevert(Errors.ZeroAddress.selector);
         assetRegistry.removeWhitelistedAssets(_zeroAddress);
@@ -211,21 +209,23 @@ contract Admin is AssetRegistryHelper {
         assertTrue(assetRegistry.isAssetDenominationAsset(USDC_ADDRESS));
         assertTrue(assetRegistry.isAssetDenominationAsset(WMATIC_ADDRESS));
 
-
         address[] memory _denominationAssets = assetRegistry.getDenominationAssets();
 
         bool _containsInvalidAsset = false;
 
         // Ordering is not guaranteed in enumerable set
-        for(uint256 i; i < _denominationAssets.length; i++) {
-            if (_denominationAssets[i] == AAVE_ADDRESS || _denominationAssets[i] == USDC_ADDRESS || _denominationAssets[i] == WMATIC_ADDRESS) {
+        for (uint256 i; i < _denominationAssets.length; i++) {
+            if (
+                _denominationAssets[i] == AAVE_ADDRESS || _denominationAssets[i] == USDC_ADDRESS
+                    || _denominationAssets[i] == WMATIC_ADDRESS
+            ) {
                 continue;
             }
 
             _containsInvalidAsset = true;
         }
 
-        assertFalse(_containsInvalidAsset);        
+        assertFalse(_containsInvalidAsset);
     }
 
     function test_AddDenominationAssets_RevertIf_NotHubOwner() public {
@@ -257,7 +257,7 @@ contract Admin is AssetRegistryHelper {
         assetRegistry.addDenominationAssets(assets);
     }
 
-    function test_AddDenominationAssets_RevertIf_AlreadyDenominationAsset() public { 
+    function test_AddDenominationAssets_RevertIf_AlreadyDenominationAsset() public {
         assetRegistry.whitelistAssets(assets);
         assetRegistry.addDenominationAssets(assets);
 
@@ -300,7 +300,7 @@ contract Admin is AssetRegistryHelper {
 
     function test_RemoveDenominationAssets_RevertIf_NotDenominationAsset() public {
         address[] memory _invalidDenominationAsset = new address[](1);
-        _invalidDenominationAsset[0] = DAI_ADDRESS; 
+        _invalidDenominationAsset[0] = DAI_ADDRESS;
 
         vm.expectRevert(Errors.AssetNotDenominationAsset.selector);
         assetRegistry.removeDenominationAssets(_invalidDenominationAsset);

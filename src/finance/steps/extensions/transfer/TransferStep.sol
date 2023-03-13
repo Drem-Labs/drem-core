@@ -53,7 +53,9 @@ contract TransferStep is BaseStep {
         if (!success) revert TransferLib.TransferFailed();
 
         // transfer fees
-        success = IERC20(fixedData.denominationAsset).transferFrom(argData.caller, IFeeController(feeController).collector(), fundSplit.fees);
+        success = IERC20(fixedData.denominationAsset).transferFrom(
+            argData.caller, IFeeController(feeController).collector(), fundSplit.fees
+        );
         if (!success) revert TransferLib.TransferFailed();
 
         // emit the event that some shares were minted at some price
@@ -89,7 +91,7 @@ contract TransferStep is BaseStep {
     }
 
     // get the funds split
-    function _splitFunds(uint256 _funds) internal pure returns(TransferLib.Distribution memory) {
+    function _splitFunds(uint256 _funds) internal pure returns (TransferLib.Distribution memory) {
         // allocate some memory to the distribution
         TransferLib.Distribution memory fundSplit;
 
@@ -102,7 +104,7 @@ contract TransferStep is BaseStep {
         fundSplit.funds = _funds - fundSplit.fees;
 
         // return this information back to the caller
-        return(fundSplit);
+        return (fundSplit);
     }
 
     // send funds (need to encode and send with ERC20)

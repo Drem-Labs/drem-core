@@ -64,7 +64,7 @@ library Events {
     //     Asset Registry Events     //
     ///////////////////////////////////
     event DenominationAssetsAdded(address[] denominationAssets);
-    event DenominationAssetsRemoved(address[] denominationAssets); 
+    event DenominationAssetsRemoved(address[] denominationAssets);
     event WhitelistedAssetsAdded(address[] whitelistedAssets);
     event WhitelistedAssetsRemoved(address[] whitelistedAssets);
 }

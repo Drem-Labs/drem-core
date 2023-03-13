@@ -10,9 +10,8 @@ import {TransferLib} from "../../src/finance/steps/extensions/Transfer/TransferL
 
 // TransferStep harness for testing internal functions
 contract TransferStepHarness is TransferStep {
-    constructor (address dremHub, address feeController) TransferStep(dremHub, feeController) {}
+    constructor(address dremHub, address feeController) TransferStep(dremHub, feeController) {}
 }
-
 
 // fork
 contract TransferStepHelper is Fork {

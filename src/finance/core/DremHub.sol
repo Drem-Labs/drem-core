@@ -83,11 +83,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
         if ((!(isTradingAllowed)) || protocolState == DataTypes.ProtocolState.Frozen) revert Errors.TradingDisabled();
     }
 
-    function isStepWhitelisted(DataTypes.StepInfo calldata _step)
-        external
-        view
-        returns (bool)
-    {
+    function isStepWhitelisted(DataTypes.StepInfo calldata _step) external view returns (bool) {
         return whitelistedSteps[_step.interactionAddress];
     }
 
@@ -106,9 +102,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
      */
     function _onlyVaultDeployer() internal {}
 
-    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bool _setting)
-        internal
-    {
+    function _setWhitelistedStep(DataTypes.StepInfo calldata _step, bool _setting) internal {
         whitelistedSteps[_step.interactionAddress] = _setting;
     }
 

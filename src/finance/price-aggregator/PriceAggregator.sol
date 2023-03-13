@@ -56,14 +56,20 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
         emit Events.EthToUSDAggregatorSet(_ethToUSDAggregator);
     }
 
-    function addSupportedAssets(address[] calldata _assets, AggregatorV3Interface[] calldata _aggregators, DataTypes.RateAsset[] calldata _rateAssets) external onlyHubOwner {
+    function addSupportedAssets(
+        address[] calldata _assets,
+        AggregatorV3Interface[] calldata _aggregators,
+        DataTypes.RateAsset[] calldata _rateAssets
+    ) external onlyHubOwner {
         uint256 len = _assets.length;
         if (len == 0) revert Errors.EmptyArray();
-        if(len != _aggregators.length || len != _rateAssets.length) revert Errors.InvalidAssetArrays();
+        if (len != _aggregators.length || len != _rateAssets.length) revert Errors.InvalidAssetArrays();
 
-        for (uint256 i; i < len; ) {
+        for (uint256 i; i < len;) {
             _addSupportedAsset(_assets[i], _aggregators[i], _rateAssets[i]);
-            unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -73,7 +79,9 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
 
         for (uint256 i; i < len;) {
             _removeSupportedAsset(_assets[i]);
-            unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
     }
 
@@ -123,19 +131,25 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
      * @param _outputAsset the output asset
      * @return the output amount
      */
-    function convertAssets(uint256[] calldata _inputAmounts, address[] calldata _inputAssets, address _outputAsset) external view returns(uint256) {
-        if(_inputAmounts.length != _inputAssets.length) revert Errors.InvalidInputArrays();
+    function convertAssets(uint256[] calldata _inputAmounts, address[] calldata _inputAssets, address _outputAsset)
+        external
+        view
+        returns (uint256)
+    {
+        if (_inputAmounts.length != _inputAssets.length) revert Errors.InvalidInputArrays();
         _validateAsset(_outputAsset);
 
         uint256 totalConversion;
 
-        for(uint256 i; i < _inputAssets.length; ) {
+        for (uint256 i; i < _inputAssets.length;) {
             _validateAsset(_inputAssets[i]);
 
             uint256 conversion = _convert(_inputAmounts[i], _inputAssets[i], _outputAsset);
 
             totalConversion = totalConversion + conversion;
-            unchecked{++i;}
+            unchecked {
+                ++i;
+            }
         }
 
         if (totalConversion == 0) revert Errors.InvalidConversion();
@@ -227,7 +241,7 @@ contract PriceAggregator is IPriceAggregator, HubOwnable {
     }
 
     function _validateAsset(address _asset) internal view {
-        if(!(_isAssetSupported(_asset))) revert Errors.AssetNotSupported();
+        if (!(_isAssetSupported(_asset))) revert Errors.AssetNotSupported();
     }
 
     function _isAssetSupported(address _asset) internal view returns (bool) {

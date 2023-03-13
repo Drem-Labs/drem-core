@@ -28,7 +28,8 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     address[] vaultAssets;
 
     // signatures
-    bytes32 private constant STEP_VAR_DATA_TYPEHASH = keccak256("VariableStepData(address owner,bytes[] memory variableStepData,uint256 nonce,uint256 deadline)");
+    bytes32 private constant STEP_VAR_DATA_TYPEHASH =
+        keccak256("VariableStepData(address owner,bytes[] memory variableStepData,uint256 nonce,uint256 deadline)");
     mapping(address => uint256) private nonces;
 
     constructor(address _dremHub) DremERC20(_dremHub) {
@@ -55,7 +56,7 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         DataTypes.StepInfo[] calldata _steps,
         bytes[] calldata _encodedArgsPerStep
     ) external initializer {
-        if(_steps.length == 0 || _encodedArgsPerStep.length == 0) revert Errors.EmptyArray();
+        if (_steps.length == 0 || _encodedArgsPerStep.length == 0) revert Errors.EmptyArray();
         if (_steps.length != _encodedArgsPerStep.length) revert Errors.StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
         _validateSteps(_steps);
@@ -85,7 +86,14 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     }
 
     // execute steps forward, needs to verify the sender
-    function windSteps(uint8 _v, bytes32 _r, bytes32 _s, address _owner, bytes[] memory _variableStepData, uint256 _deadline) external nonReentrant {
+    function windSteps(
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s,
+        address _owner,
+        bytes[] memory _variableStepData,
+        uint256 _deadline
+    ) external nonReentrant {
         // verify the signer
         _verifySigner(_v, _r, _s, _owner, _variableStepData, _deadline);
 
@@ -93,7 +101,14 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     }
 
     // execute steps backwards, needs to verify the sender
-    function unwindSteps(uint8 _v, bytes32 _r, bytes32 _s, address _owner, bytes[] memory _variableStepData, uint256 _deadline) external nonReentrant {
+    function unwindSteps(
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s,
+        address _owner,
+        bytes[] memory _variableStepData,
+        uint256 _deadline
+    ) external nonReentrant {
         // verify the signer
         _verifySigner(_v, _r, _s, _owner, _variableStepData, _deadline);
 
@@ -110,28 +125,25 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     function DOMAIN_HASH() public view returns (bytes32) {
         bytes32 dhash = keccak256(
             abi.encode(
-                    keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
-                    keccak256(bytes(name())),
-                    keccak256(abi.encodePacked(VERSION)),
-                    block.chainid,
-                    address(this)
-                    )
-            );
+                keccak256("EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)"),
+                keccak256(bytes(name())),
+                keccak256(abi.encodePacked(VERSION)),
+                block.chainid,
+                address(this)
+            )
+        );
 
         return dhash;
     }
 
     // getter for the hash struct
-    function getHashStruct(address _owner, bytes[] memory _variableStepData, uint256 _deadline) public view returns (bytes32) {
-        bytes32 hashStruct = keccak256(
-            abi.encode(
-                STEP_VAR_DATA_TYPEHASH,
-                _owner,
-                _variableStepData,
-                nonces[_owner],
-                _deadline
-                )
-            );
+    function getHashStruct(address _owner, bytes[] memory _variableStepData, uint256 _deadline)
+        public
+        view
+        returns (bytes32)
+    {
+        bytes32 hashStruct =
+            keccak256(abi.encode(STEP_VAR_DATA_TYPEHASH, _owner, _variableStepData, nonces[_owner], _deadline));
 
         return hashStruct;
     }
@@ -160,17 +172,19 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         }
     }
 
-    function _verifySigner(uint8 _v, bytes32 _r, bytes32 _s, address _owner, bytes[] memory _variableStepData, uint256 _deadline) internal {
+    function _verifySigner(
+        uint8 _v,
+        bytes32 _r,
+        bytes32 _s,
+        address _owner,
+        bytes[] memory _variableStepData,
+        uint256 _deadline
+    ) internal {
         if (_deadline >= block.timestamp) revert Errors.DeadlineExceeded();
 
         // create the combined hash
-        bytes32 _hash = keccak256(
-            abi.encodePacked(
-                "\x19\x01",
-                DOMAIN_HASH(),
-                getHashStruct(_owner, _variableStepData, _deadline)
-                )
-            );
+        bytes32 _hash =
+            keccak256(abi.encodePacked("\x19\x01", DOMAIN_HASH(), getHashStruct(_owner, _variableStepData, _deadline)));
 
         // get the signer
         address signer = ecrecover(_hash, _v, _r, _s);

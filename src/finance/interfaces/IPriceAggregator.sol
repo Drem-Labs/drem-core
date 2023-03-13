@@ -8,7 +8,8 @@ interface IPriceAggregator {
     ////////////////////
     ///     Admin    ///
     ////////////////////
-    function addSupportedAssets(address[] calldata, AggregatorV3Interface[] calldata, DataTypes.RateAsset[] calldata) external;
+    function addSupportedAssets(address[] calldata, AggregatorV3Interface[] calldata, DataTypes.RateAsset[] calldata)
+        external;
     function removeSupportedAssets(address[] calldata) external;
     function setEthToUSDAggregator(AggregatorV3Interface) external;
 

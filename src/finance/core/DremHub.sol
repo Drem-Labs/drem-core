@@ -107,7 +107,7 @@ contract DremHub is Ownable2StepUpgradeable, UUPSUpgradeable, IDremHub {
     }
 
     function _getStepHash(DataTypes.StepInfo calldata _step) internal pure returns (bytes32) {
-        return keccak256(abi.encode(_step.interactionAddress, _step.functionSelector));
+        return keccak256(abi.encode(_step.interactionAddress));
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}

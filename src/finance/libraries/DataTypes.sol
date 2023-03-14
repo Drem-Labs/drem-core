@@ -12,7 +12,6 @@ library DataTypes {
     // basic step routing information
     struct StepInfo {
         address interactionAddress;
-        bytes4 functionSelector;
     }
 
     // user expectations for the withdrawal assets (can't check with oracles in worst-case)

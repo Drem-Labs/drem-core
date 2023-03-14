@@ -3,6 +3,7 @@ pragma solidity =0.8.17;
 
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IVault} from "../../interfaces/IVault.sol";
+import {IStep} from "../../steps/IStep.sol";
 import {DataTypes} from "../../libraries/DataTypes.sol";
 import {DremERC20} from "../../base/DremERC20.sol";
 import {IDremHub} from "../../interfaces/IDremHub.sol";
@@ -50,17 +51,16 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     // init should not emit an event -- Fund deployer should
     // each steps need fixed encoded data and variable encoded data
     function init(
-        address caller,
         string calldata _name,
         string calldata _symbol,
         DataTypes.StepInfo[] calldata _steps,
-        bytes[] calldata _encodedArgsPerStep
+        bytes[] calldata _fixedArgDataPerStep
     ) external initializer {
-        if (_steps.length == 0 || _encodedArgsPerStep.length == 0) revert Errors.EmptyArray();
-        if (_steps.length != _encodedArgsPerStep.length) revert Errors.StepsAndArgsNotSameLength();
+        if (_steps.length == 0 || _fixedArgDataPerStep.length == 0) revert Errors.EmptyArray();
+        if (_steps.length != _fixedArgDataPerStep.length) revert Errors.StepsAndArgsNotSameLength();
         __ERC20_init(_name, _symbol);
         _validateSteps(_steps);
-        _addSteps(_steps);
+        _addSteps(_steps, _fixedArgDataPerStep);
     }
 
     function mintShares(address _to, uint256 _shareAmount) external onlyHubAllowed {
@@ -91,11 +91,11 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         bytes32 _r,
         bytes32 _s,
         address _owner,
-        bytes[] memory _variableStepData,
+        bytes[] memory _variableDataPerStep,
         uint256 _deadline
     ) external nonReentrant {
         // verify the signer
-        _verifySigner(_v, _r, _s, _owner, _variableStepData, _deadline);
+        _verifySigner(_v, _r, _s, _owner, _variableDataPerStep, _deadline);
 
         // wind each step
     }
@@ -106,11 +106,11 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         bytes32 _r,
         bytes32 _s,
         address _owner,
-        bytes[] memory _variableStepData,
+        bytes[] memory _variableDataPerStep,
         uint256 _deadline
     ) external nonReentrant {
         // verify the signer
-        _verifySigner(_v, _r, _s, _owner, _variableStepData, _deadline);
+        _verifySigner(_v, _r, _s, _owner, _variableDataPerStep, _deadline);
 
         // unwind each step
     }
@@ -137,13 +137,13 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     }
 
     // getter for the hash struct
-    function getHashStruct(address _owner, bytes[] memory _variableStepData, uint256 _deadline)
+    function getHashStruct(address _owner, bytes[] memory _variableDataPerStep, uint256 _deadline)
         public
         view
         returns (bytes32)
     {
         bytes32 hashStruct =
-            keccak256(abi.encode(STEP_VAR_DATA_TYPEHASH, _owner, _variableStepData, nonces[_owner], _deadline));
+            keccak256(abi.encode(STEP_VAR_DATA_TYPEHASH, _owner, _variableDataPerStep, nonces[_owner], _deadline));
 
         return hashStruct;
     }
@@ -163,9 +163,14 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         if (!(DREM_HUB.isStepWhitelisted(_step))) revert Errors.StepNotWhitelisted();
     }
 
-    function _addSteps(DataTypes.StepInfo[] calldata _steps) internal {
+    function _addSteps(DataTypes.StepInfo[] calldata _steps, bytes[] memory _fixedArgDataPerStep) internal {
         for (uint256 i; i < _steps.length;) {
+            // add the step to the array
             steps.push(_steps[i]);
+
+            // init the step (the step itself will do the validation)
+            IStep(_steps[i].interactionAddress).init(i, _fixedArgDataPerStep[i]);
+
             unchecked {
                 ++i;
             }
@@ -177,23 +182,25 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
         bytes32 _r,
         bytes32 _s,
         address _owner,
-        bytes[] memory _variableStepData,
+        bytes[] memory _variableDataPerStep,
         uint256 _deadline
-    ) internal {
+    ) internal view {
         if (_deadline >= block.timestamp) revert Errors.DeadlineExceeded();
 
+        /*
         // create the combined hash
         bytes32 _hash =
-            keccak256(abi.encodePacked("\x19\x01", DOMAIN_HASH(), getHashStruct(_owner, _variableStepData, _deadline)));
+            keccak256(abi.encodePacked("\x19\x01", DOMAIN_HASH(), getHashStruct(_owner, _variableDataPerStep, _deadline)));
 
         // get the signer
         address signer = ecrecover(_hash, _v, _r, _s);
 
-        // verify that the signer is the owner (not being done yet, as this requires heavy testing)
-        // if ((signer != _owner) || (signer == address(0))) revert Errors.InvalidSignature();
+        /// verify that the signer is the owner (not being done yet, as this requires heavy testing)
+        if ((signer != _owner) || (signer == address(0))) revert Errors.InvalidSignature();
 
         // increment nonce, let the calling function continue
         ++nonces[_owner];
+        */
     }
 
     function _executeSteps() internal {}

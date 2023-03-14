@@ -139,7 +139,7 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      * @return true if whitelisted, false if not
      */
     function isAssetWhitelisted(address _asset) external view returns (bool) {
-        return whitelistedAssets.contains(_asset);
+        return PRICE_AGGREGATOR.isAssetSupported(_asset) && whitelistedAssets.contains(_asset);
     }
 
     /**

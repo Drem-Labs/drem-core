@@ -86,7 +86,7 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     }
 
     // execute steps forward, needs to verify the sender
-    function windSteps(
+    function windStepsWithSig(
         uint8 _v,
         bytes32 _r,
         bytes32 _s,
@@ -101,7 +101,7 @@ contract Vault is IVault, DremERC20, ReentrancyGuard {
     }
 
     // execute steps backwards, needs to verify the sender
-    function unwindSteps(
+    function unwindStepsWithSig(
         uint8 _v,
         bytes32 _r,
         bytes32 _s,

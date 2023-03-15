@@ -68,8 +68,6 @@ contract Admin is DremHubHelper {
         DataTypes.StepInfo memory _step =
             DataTypes.StepInfo({interactionAddress: USDC_ADDRESS});
 
-        bytes memory _encodedArgs = bytes("DremHub.ANY_CALL");
-
         vm.expectEmit(true, true, true, true);
         emit Events.WhitelistedStepAdded(_step.interactionAddress);
 

@@ -130,7 +130,7 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      * @return true if whitelisted, false if not
      */
     function isAssetDenominationAsset(address _asset) external view returns (bool) {
-        return denominationAssets.contains(_asset);
+        return _isAssetWhitelisted(_asset) && denominationAssets.contains(_asset);
     }
 
     /**
@@ -139,6 +139,10 @@ contract AssetRegistry is HubOwnable, UUPSUpgradeable {
      * @return true if whitelisted, false if not
      */
     function isAssetWhitelisted(address _asset) external view returns (bool) {
+        return _isAssetWhitelisted(_asset);
+    }
+
+    function _isAssetWhitelisted(address _asset) internal view returns(bool) {
         return PRICE_AGGREGATOR.isAssetSupported(_asset) && whitelistedAssets.contains(_asset);
     }
 

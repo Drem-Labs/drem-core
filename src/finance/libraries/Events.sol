@@ -68,5 +68,5 @@ library Events {
     ///////////////////////////////////
     //     Vault Deployer Events     //
     ///////////////////////////////////
-    event NewVaultDeployed(address indexed _vault);
+    event VaultDeployed(address indexed _vault);
 }

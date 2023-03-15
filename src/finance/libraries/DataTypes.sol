@@ -5,13 +5,14 @@ import {AggregatorV3Interface} from "@chainlink/src/v0.8/interfaces/AggregatorV3
 
 // To Do: Order alphabetically
 library DataTypes {
-    /**
-     * Global data types
-     */
+    /////////////////////////////
+    ///   Global Data Types   ///
+    ////////////////////////////
 
     // basic step routing information
     struct StepInfo {
         address interactionAddress;
+        bytes fixedArgData;
     }
 
     // user expectations for the withdrawal assets (can't check with oracles in worst-case)
@@ -33,21 +34,22 @@ library DataTypes {
     }
 
     /**
-     *  Enabled: Wind, unwind, create new strategies
-     *  Legacy: Wind and unwind existing strategies
-     *  Deprecated: Unwind existing strategies
      *  Disabled: No functionality
+     *  Deprecated: Unwind existing strategies
+     *  Legacy: Wind and unwind existing strategies
+     *  Enabled: Wind, unwind, create new strategies
      */
     enum StepState {
-        Enabled,
-        Legacy,
+        Disabled,
         Deprecated,
-        Disabled
+        Legacy,
+        Enabled
     }
 
-    /**
-     *  Price aggregator data types
-     */
+    ///////////////////////////////////////
+    ///   Price Aggregator Data Types   ///
+    ///////////////////////////////////////
+
     enum RateAsset {
         USD,
         ETH
@@ -57,5 +59,17 @@ library DataTypes {
         AggregatorV3Interface aggregator;
         RateAsset rateAsset;
         uint256 units;
+    }
+
+    /////////////////////////////////////
+    ///   Vault Deployer Data Types   ///
+    /////////////////////////////////////
+
+    struct DeploymentInfo {
+        address demonminationAsset;
+        uint256 inputAmount;
+        string name;
+        string symbol;
+        StepInfo[] steps;
     }
 }

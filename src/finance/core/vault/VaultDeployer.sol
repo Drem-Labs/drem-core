@@ -42,13 +42,10 @@ contract VaultDeployer is StateAware, UUPSUpgradeable {
      * @param _variableArgDataPerStep The variable argument data used in the initial wind
      * @return The address of the newly created vault
      */
+
+    // Struct used to avoid a stack too deep error
     function deployVault(
-        address _denominationAsset,
-        uint256 _inputAmount,
-        string calldata _name,
-        string calldata _symbol,
-        DataTypes.StepInfo[] calldata _steps,
-        bytes[] calldata _fixedArgDataPerStep,
+        DataTypes.DeploymentInfo calldata _deploymentInfo,
         bytes [] calldata _variableArgDataPerStep
     ) external returns (address) {
         // Input validation 
@@ -70,7 +67,7 @@ contract VaultDeployer is StateAware, UUPSUpgradeable {
         // Can't do right now...
 
         // Emit event
-        emit Events.NewVaultDeployed(_vault);
+        emit Events.VaultDeployed(_vault);
 
         return _vault;
     }

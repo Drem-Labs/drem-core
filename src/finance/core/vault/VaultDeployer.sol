@@ -43,12 +43,18 @@ contract VaultDeployer is StateAware, UUPSUpgradeable {
      * @return The address of the newly created vault
      */
     function deployVault(
+        address _denominationAsset,
+        uint256 _inputAmount,
         string calldata _name,
         string calldata _symbol,
         DataTypes.StepInfo[] calldata _steps,
         bytes[] calldata _fixedArgDataPerStep,
         bytes [] calldata _variableArgDataPerStep
     ) external returns (address) {
+        // Input validation 
+        // denomination asset
+        // input amount 
+
         // Deploy proxy
         address _vault = vaultImplementation.clone();
         

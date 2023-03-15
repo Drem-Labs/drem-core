@@ -11,33 +11,29 @@ library Events {
 
     /**
      * @dev Emitted when whitelisted step is added
-     *
      * @param interactionAddress the contract address associated with the step
      */
     event WhitelistedStepAdded(address interactionAddress);
 
     /**
      * @dev Emitted when whitelisted step is removed
-     *
      * @param interactionAddress the contract address associated with the step
      */
     event WhitelistedStepRemoved(address interactionAddress);
 
     /**
-     *
+     * @dev emitted when the fund deployer is set
      */
     event FundDeployerSet();
 
     /**
      * @dev Emitted when protocol state is set
-     *
      * @param _state the new protocol state
      */
     event ProtocolStateSet(DataTypes.ProtocolState _state);
 
     /**
      * @dev Emitted when global trading is set
-     *
      * @param setting the new setting
      */
     event GlobalTradingSet(bool setting);
@@ -45,20 +41,21 @@ library Events {
     /////////////////////////////////////
     //     Price Aggregator Events     //
     /////////////////////////////////////
-
+    /**
+     * @dev Emitted when the EthToUSDAggregator is reset 
+     * @param ethToUSDAggregator the newly set aggregator 
+     */
     event EthToUSDAggregatorSet(AggregatorV3Interface ethToUSDAggregator);
 
-    event MaticToUSDAggregatorSet(AggregatorV3Interface maticToUSDAggregator);
+    /**
+     *
+     */
+    event SupportedAssetAdded(address indexed asset, AggregatorV3Interface aggregator, DataTypes.RateAsset indexed rateAsset);
 
     /**
      *
      */
-    event SupportedAssetAdded(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
-
-    /**
-     *
-     */
-    event SupportedAssetRemoved(address asset, AggregatorV3Interface aggregator, DataTypes.RateAsset rateAsset);
+    event SupportedAssetRemoved(address indexed asset, AggregatorV3Interface aggregator, DataTypes.RateAsset indexed rateAsset);
 
     ///////////////////////////////////
     //     Asset Registry Events     //
@@ -67,4 +64,9 @@ library Events {
     event DenominationAssetsRemoved(address[] denominationAssets);
     event WhitelistedAssetsAdded(address[] whitelistedAssets);
     event WhitelistedAssetsRemoved(address[] whitelistedAssets);
+
+    ///////////////////////////////////
+    //     Vault Deployer Events     //
+    ///////////////////////////////////
+    event NewVaultDeployed(address indexed _vault);
 }

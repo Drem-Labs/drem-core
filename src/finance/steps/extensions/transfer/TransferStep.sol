@@ -16,7 +16,7 @@ contract TransferStep is BaseStep {
     mapping(address => mapping(uint256 => TransferLib.FixedArgData)) public stepData;
 
     // controls how many fees are paid and to where
-    address feeController;
+    address private feeController;
 
     // constructor --> set the GAValuer
     constructor(address _dremHub, address _feeController) BaseStep(_dremHub) {
@@ -99,7 +99,7 @@ contract TransferStep is BaseStep {
         // save this for later, when we build a fee controller
         // fundSplit.fees = IFeeController(feeController).calculateFee(_funds, msg.sender);
         fundSplit.fees = 0;
-
+   
         // get the remaining purchasing power
         fundSplit.funds = _funds - fundSplit.fees;
 
